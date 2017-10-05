@@ -1,7 +1,7 @@
 applications:
 - disk_quota: 1024M
-  host: itucsdb15
-  name: itucsdb15
+  host: itucsdb1723
+  name: itucsdb1723
   path: .
   domain: mybluemix.net
   instances: 1
