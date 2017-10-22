@@ -22,10 +22,19 @@ def get_elephantsql_dsn(vcap_services):
              dbname='{}'""".format(user, password, host, port, dbname)
     return dsn
 
+
+
 @app.route('/')
+@app.route('/home')
 def home_page():
-    now = datetime.datetime.now()
-    return render_template('home.html', current_time=now.ctime())
+    return render_template('header.html', title="Dotabase", route="home") + \
+           render_template('home.html') + \
+           render_template('footer.html')
+
+
+
+
+
 
 @app.route('/initdb')
 def initialize_database():
@@ -42,7 +51,7 @@ def initialize_database():
         cursor.execute(query)
 
         connection.commit()
-    return redirect(url_for('home_page')) 
+    return redirect(url_for('home_page'))
 
 
 if __name__ == '__main__':
