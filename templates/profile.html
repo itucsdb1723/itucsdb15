@@ -1,0 +1,53 @@
+<div class="container">
+  <div class="row">
+    <div class="col-lg-4 my-3">
+      <img src="./img/sumail.jpg" class="rounded img-fluid" alt="">
+      <div class="h1 text-center my-3 text-wlight">{{ name }}</div>
+      <div class="row no-gutters">
+        <div class="col text-right font-weight-bold">
+          {% for key, value in info %}
+          {{ key }}: <br>
+          {% endfor %}
+        </div>
+        <div class="col text-left">
+          {% for key, value in info %}
+          {{ value }} <br>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-8 my-3">
+      <div class="card text-uppercase mb-3">
+        <div class="card-body">
+          <div class="row text-center">
+            <div class="col-sm-3">
+              <div class="value h1">{{ stats[0][1] }}</div>
+              <div class="label">{{ stats[0][0] }}</div>
+            </div>
+            <div class="col-sm-3">
+              <div class="value h1">{{ stats[1][1] }}</div>
+              <div class="label">{{ stats[1][0] }}</div>
+            </div>
+            <div class="col-sm-3">
+              <div class="value h1">{{ stats[2][1] }}</div>
+              <div class="label">{{ stats[2][0] }}</div>
+            </div>
+            <div class="col-sm-3">
+              <div class="value h1">#{{ stats[3][1] }}</div>
+              <div class="label">{{ stats[3][0] }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header bg-dark text-light">Season Overview</div>
+        <div class="card-body">
+          <!--TABLE-->
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
