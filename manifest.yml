@@ -1,5 +1,7 @@
 applications:
-- disk_quota: 1024M
+- services:
+  - ElephantSQL-w0
+  disk_quota: 1024M
   host: itucsdb1723
   name: itucsdb1723
   path: .
