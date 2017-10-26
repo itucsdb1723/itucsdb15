@@ -51,8 +51,21 @@ def player_profile(nick):
              ('Played','/1'),
              ('Qualified','/3'),
              ('Team Rank','/2')]
-    return render_template('header.html', title="Dotabase", route="players") + \
+    return render_template('header.html', title="Dotabase", route="player") + \
            render_template('profile.html', name=player_info[2], info=info, stats=stats) + \
+           render_template('footer.html')
+
+@app.route('/player')
+def players_page():
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor = connection.cursor()
+        query = """ SELECT * FROM PLAYER """
+        cursor.execute(query)
+        players = cursor.fetchall()
+        connection.commit()
+    today=date.today()
+    return render_template('header.html', title="Dotabase", route="player") + \
+           render_template('list.html', title="All Players", route="player", players=players) + \
            render_template('footer.html')
 
 @app.route('/initdb')

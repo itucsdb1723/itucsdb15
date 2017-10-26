@@ -1,0 +1,11 @@
+<div class="container">
+
+    <div class="display-4 my-4">{{ title }}</div>
+
+    <div class="list-group">
+      {% for player in players %}
+      <a href="{{ route }}/{{ player[2] }}" class="list-group-item list-group-item-action">{{ player[2] }}</a>
+      {% endfor %}
+    </div>
+
+  </div>
