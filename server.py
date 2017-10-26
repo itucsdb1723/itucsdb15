@@ -63,9 +63,19 @@ def players_page():
         cursor.execute(query)
         players = cursor.fetchall()
         connection.commit()
-    today=date.today()
     return render_template('header.html', title="Dotabase", route="player") + \
-           render_template('list.html', title="All Players", route="player", players=players) + \
+           render_template('list.html', title="All Players", route="player", items=players, index =2) + \
+           render_template('footer.html')
+@app.route('/team')
+def teams_page():
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor = connection.cursor()
+        query = """ SELECT * FROM TEAM """
+        cursor.execute(query)
+        teams = cursor.fetchall()
+        connection.commit()
+    return render_template('header.html', title="Dotabase", route="team") + \
+           render_template('list.html', title="All Players", route="team", items=teams, index=1) + \
            render_template('footer.html')
 
 @app.route('/initdb')
@@ -101,6 +111,24 @@ def initialize_database():
         VALUES ('Miracle-','Amer','Al-Barqawi','JO','1997-06-20')"""
         cursor.execute(query)
 
+        query = """ CREATE TABLE TEAM(
+        t_id SERIAL PRIMARY KEY,
+        t_name VARCHAR(60),
+        t_tag VARCHAR(10),
+        t_region INTEGER,
+        t_created DATE
+        )"""
+        cursor.execute(query)
+
+        query = """INSERT INTO TEAM (t_name,t_tag,t_region,t_created)
+        VALUES ('Evil Geniuses','EG',1,'2011-10-24')"""
+        cursor.execute(query)
+        query = """INSERT INTO TEAM (t_name,t_tag,t_region)
+        VALUES ('Mineski','Mski',5)"""
+        cursor.execute(query)
+        query = """INSERT INTO TEAM (t_name,t_tag,t_region,t_created)
+        VALUES ('Team Liquid','Liquid ',3,'2012-12-06')"""
+        cursor.execute(query)
         connection.commit()
     return redirect(url_for('home_page'))
 
