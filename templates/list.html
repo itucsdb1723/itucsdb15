@@ -3,8 +3,8 @@
     <div class="display-4 my-4">{{ title }}</div>
 
     <div class="list-group">
-      {% for player in players %}
-      <a href="{{ route }}/{{ player[2] }}" class="list-group-item list-group-item-action">{{ player[2] }}</a>
+      {% for item in items %}
+      <a href="{{ route }}/{{ item[index] }}" class="list-group-item list-group-item-action">{{ item[index] }}</a>
       {% endfor %}
     </div>
 
