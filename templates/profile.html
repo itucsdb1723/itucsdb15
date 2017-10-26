@@ -3,18 +3,16 @@
     <div class="col-lg-4 my-3 text-center">
       <img src="./img/sumail.jpg" class="rounded img-fluid" alt="">
       <div class="h1 text-center my-3 text-wlight">{{ name }}</div>
+      {% for key, value in info %}
       <div class="row no-gutters">
-        <div class="col text-right font-weight-bold">
-          {% for key, value in info %}
-          {{ key }}: <br>
-          {% endfor %}
+        <div class="col text-right font-weight-bold px-1">
+        {{ key }}:
         </div>
-        <div class="col text-left">
-          {% for key, value in info %}
-          {{ value }} <br>
-          {% endfor %}
+        <div class="col text-left px-1">
+          {{ value }}
         </div>
       </div>
+      {% endfor %}
     </div>
 
     <div class="col-lg-8 my-3">
