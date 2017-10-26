@@ -66,6 +66,7 @@ def players_page():
     return render_template('header.html', title="Dotabase", route="player") + \
            render_template('list.html', title="All Players", route="player", items=players, index =2) + \
            render_template('footer.html')
+           
 @app.route('/team')
 def teams_page():
     with dbapi2.connect(app.config['dsn']) as connection:
@@ -75,7 +76,7 @@ def teams_page():
         teams = cursor.fetchall()
         connection.commit()
     return render_template('header.html', title="Dotabase", route="team") + \
-           render_template('list.html', title="All Players", route="team", items=teams, index=1) + \
+           render_template('list.html', title="All Teams", route="team", items=teams, index=1) + \
            render_template('footer.html')
 
 @app.route('/initdb')
