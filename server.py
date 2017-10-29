@@ -38,6 +38,9 @@ def player_profile(nick):
         query = """ SELECT * FROM PLAYER WHERE p_nick=%s """
         cursor.execute(query,[nick])
         player_info = cursor.fetchall()[0]
+        query2 = """ SELECT * FROM ROSTER JOIN TEAM ON ROSTER.t_id=TEAM.t_id WHERE p_id=%s"""
+        cursor.execute(query2,[player_info[0]])
+        history = cursor.fetchall()
         connection.commit()
     today=date.today()
     info =  [('Name',player_info[3]+" "+player_info[4]),
@@ -52,7 +55,7 @@ def player_profile(nick):
              ('Qualified','/3'),
              ('Team Rank','/2')]
     return render_template('header.html', title="Dotabase", route="player") + \
-           render_template('profile.html', name=player_info[2], info=info, stats=stats) + \
+           render_template('profile.html', name=player_info[2], info=info, stats=stats, history=history) + \
            render_template('footer.html')
 
 @app.route('/player')
@@ -88,6 +91,12 @@ def initialize_database():
         cursor.execute(query)
 
         query = """DROP TABLE IF EXISTS PLAYER"""
+        cursor.execute(query)
+
+        query = """DROP TABLE IF EXISTS TEAM"""
+        cursor.execute(query)
+
+        query = """DROP TABLE IF EXISTS ROSTER"""
         cursor.execute(query)
 
         query = """CREATE TABLE PLAYER (
@@ -137,18 +146,18 @@ def initialize_database():
         join_date DATE,
         leave_date DATE,
         position INTEGER,
-        is_captain BIT NOT NULL,
+        is_captain BOOLEAN NOT NULL,
         FOREIGN KEY(p_id) REFERENCES PLAYER(p_id),
         FOREIGN KEY(t_id) REFERENCES TEAM(t_id)
         )"""
         cursor.execute(query)
         query = """ INSERT INTO ROSTER (p_id, t_id , join_date, position,is_captain)
-        VALUES ((SELECT p_id FROM PLAYER WHERE p_name LIKE '%Sumail%'),
+        VALUES ((SELECT p_id FROM PLAYER WHERE p_nick LIKE '%SumaiL%'),
                 (SELECT t_id FROM TEAM WHERE t_name LIKE '%Evil%'),
                  '2015-01-05',
                  2,
-                 0)"""
-
+                 False)"""
+        cursor.execute(query)
         connection.commit()
 
     return redirect(url_for('home_page'))
