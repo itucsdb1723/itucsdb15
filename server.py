@@ -66,7 +66,7 @@ def players_page():
     return render_template('header.html', title="Dotabase", route="player") + \
            render_template('list.html', title="All Players", route="player", items=players, index =2) + \
            render_template('footer.html')
-           
+
 @app.route('/team')
 def teams_page():
     with dbapi2.connect(app.config['dsn']) as connection:
@@ -130,7 +130,27 @@ def initialize_database():
         query = """INSERT INTO TEAM (t_name,t_tag,t_region,t_created)
         VALUES ('Team Liquid','Liquid ',3,'2012-12-06')"""
         cursor.execute(query)
+
+        query = """ CREATE TABLE ROSTER(
+        p_id INTEGER NOT NULL,
+        t_id INTEGER NOT NULL,
+        join_date DATE,
+        leave_date DATE,
+        position INTEGER,
+        is_captain BIT NOT NULL,
+        FOREIGN KEY(p_id) REFERENCES PLAYER(p_id),
+        FOREIGN KEY(t_id) REFERENCES TEAM(t_id)
+        )"""
+        cursor.execute(query)
+        query = """ INSERT INTO ROSTER (p_id, t_id , join_date, position,is_captain)
+        VALUES ((SELECT p_id FROM PLAYER WHERE p_name LIKE '%Sumail%'),
+                (SELECT t_id FROM TEAM WHERE t_name LIKE '%Evil%'),
+                 '2015-01-05',
+                 2,
+                 0)"""
+
         connection.commit()
+
     return redirect(url_for('home_page'))
 
 
