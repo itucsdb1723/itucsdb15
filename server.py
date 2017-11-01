@@ -38,7 +38,7 @@ def player_profile(nick):
         query = """ SELECT * FROM PLAYER WHERE p_nick=%s """
         cursor.execute(query,[nick])
         player_info = cursor.fetchall()[0]
-        query2 = """ SELECT * FROM ROSTER JOIN TEAM ON ROSTER.t_id=TEAM.t_id WHERE p_id=%s"""
+        query2 = """ SELECT * FROM ROSTER JOIN TEAM ON ROSTER.t_id=TEAM.t_id WHERE p_id=%s ORDER BY join_date ASC"""
         cursor.execute(query2,[player_info[0]])
         history = cursor.fetchall()
         connection.commit()
@@ -155,6 +155,13 @@ def initialize_database():
         VALUES ((SELECT p_id FROM PLAYER WHERE p_nick LIKE '%SumaiL%'),
                 (SELECT t_id FROM TEAM WHERE t_name LIKE '%Evil%'),
                  '2015-01-05',
+                 2,
+                 False)"""
+        cursor.execute(query)
+        query = """ INSERT INTO ROSTER (p_id, t_id , join_date, leave_date, position,is_captain)
+        VALUES ((SELECT p_id FROM PLAYER WHERE p_nick LIKE '%SumaiL%'),
+                (SELECT t_id FROM TEAM WHERE t_name LIKE '%Evil%'),
+                 '2014-01-11','2015-01-05',
                  2,
                  False)"""
         cursor.execute(query)
