@@ -51,7 +51,7 @@ def player_profile(nick):
              ('Birth Date',player_info[6]),
              ('Age',today.year - player_info[6].year - ((today.month, today.day) < (player_info[6].month, player_info[6].day))),
              ('Team',player_info[10]),
-             ('Solo MMR',player_info[7]),
+             ('Solo MMR',player_info[8]),
              ('Total Earnings','/$2,602,268')]
     stats = [('DPC Points','/150'),
              ('Played','/1'),
