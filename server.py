@@ -36,6 +36,7 @@ def home_page():
 
 @app.route('/player/<nick>')
 def player_profile(nick):
+    today=date.today()
     with dbapi2.connect(app.config['dsn']) as connection:
         cursor = connection.cursor()
         query = """ SELECT * FROM PLAYER LEFT JOIN (SELECT t_id,t_name FROM TEAM) AS TEAM ON PLAYER.t_id=TEAM.t_id WHERE p_nick=%s """
@@ -44,19 +45,28 @@ def player_profile(nick):
         query2 = """ SELECT t_name,join_date,leave_date,position,is_captain FROM ROSTER JOIN TEAM ON ROSTER.t_id=TEAM.t_id WHERE p_id=%s ORDER BY join_date ASC"""
         cursor.execute(query2,[player_info[0]])
         history = cursor.fetchall()
+        query3 = """ SELECT SUM(dpc_points),COUNT(*),COUNT(CASE WHEN tr_date<%s THEN 1 END) FROM RESULT LEFT JOIN TOURNAMENT ON RESULT.tr_id=TOURNAMENT.tr_id WHERE p_id=%s """
+        cursor.execute(query3,[today,player_info[0]])
+        results = cursor.fetchall()[0]
         connection.commit()
-    today=date.today()
-    info =  [('Name',player_info[3]+" "+player_info[4]),
-             ('Country',countries[player_info[5]]),
-             ('Birth Date',player_info[6]),
-             ('Age',today.year - player_info[6].year - ((today.month, today.day) < (player_info[6].month, player_info[6].day))),
-             ('Team',player_info[10]),
-             ('Solo MMR',player_info[8]),
-             ('Total Earnings','/$2,602,268')]
-    stats = [('DPC Points','/150'),
-             ('Played','/1'),
-             ('Qualified','/3'),
-             ('Team Rank','/2')]
+    info =  []
+    if player_info[3]!=None or player_info[4]!=None:
+        info.append(('Name',player_info[3]+" "+player_info[4]))
+    if player_info[5]!=None:
+        info.append(('Country',countries[player_info[5]]))
+    if player_info[6]!=None:
+        info.append(('Birth Date',player_info[6]))
+    if player_info[6]!=None:
+        info.append(('Age',today.year - player_info[6].year - ((today.month, today.day) < (player_info[6].month, player_info[6].day))))
+    if player_info[10]!=None:
+        info.append(('Team',player_info[10]))
+    if player_info[8]!=None:
+        info.append(('Solo MMR',player_info[8]))
+
+    stats = [('DPC Points',results[0]),
+             ('Played',results[1]),
+             ('Qualified',results[2]),
+             ('Team Rank','')]
     return render_template('header.html', title="Dotabase", route="player") + \
            render_template('profile.html', name=player_info[2], info=info, stats=stats, history=history) + \
            render_template('footer.html')
@@ -90,8 +100,6 @@ def initialize_database():
     with dbapi2.connect(app.config['dsn']) as connection:
         cursor = connection.cursor()
 
-        query = """DROP TABLE IF EXISTS COUNTER CASCADE"""
-        cursor.execute(query)
         query = """DROP TABLE IF EXISTS ROSTER CASCADE"""
         cursor.execute(query)
         query = """DROP TABLE IF EXISTS TEAM CASCADE"""
@@ -99,6 +107,8 @@ def initialize_database():
         query = """DROP TABLE IF EXISTS PLAYER CASCADE"""
         cursor.execute(query)
         query = """DROP TABLE IF EXISTS TOURNAMENT CASCADE"""
+        cursor.execute(query)
+        query = """DROP TABLE IF EXISTS RESULT CASCADE"""
         cursor.execute(query)
 
         query = """ CREATE TABLE TEAM(
@@ -160,6 +170,37 @@ def initialize_database():
         cursor.execute(query)
         query = """INSERT INTO PLAYER (p_nick,p_name,p_surname,p_country,p_birth)
         VALUES ('Miracle-','Amer','Al-Barqawi','JO','1997-06-20')"""
+        cursor.execute(query)
+
+        query = """INSERT INTO PLAYER (p_nick) VALUES ('RAMZES666')"""
+        cursor.execute(query)
+        query = """INSERT INTO PLAYER (p_nick) VALUES ('MidOne')"""
+        cursor.execute(query)
+
+        query = """CREATE TABLE RESULT (
+        p_id INTEGER NOT NULL,
+        t_id INTEGER NOT NULL,
+        tr_id INTEGER NOT NULL,
+        placement INTEGER,
+        dpc_points INTEGER,
+        prize INTEGER,
+        FOREIGN KEY(p_id) REFERENCES PLAYER(p_id) ON DELETE CASCADE,
+        FOREIGN KEY(t_id) REFERENCES TEAM(t_id) ON DELETE CASCADE,
+        FOREIGN KEY(tr_id) REFERENCES TOURNAMENT(tr_id) ON DELETE CASCADE
+        )"""
+        cursor.execute(query)
+
+        query = """INSERT INTO RESULT (p_id,t_id,tr_id,placement,dpc_points)
+        VALUES ((SELECT p_id FROM PLAYER WHERE p_nick='SumaiL'),
+                (SELECT t_id FROM TEAM WHERE t_name='Evil Geniuses'),
+                (SELECT tr_id FROM TOURNAMENT WHERE tr_name='PGL Open Bucharest'),
+                3,30)"""
+        cursor.execute(query)
+        query = """INSERT INTO RESULT (p_id,t_id,tr_id,placement,dpc_points)
+        VALUES ((SELECT p_id FROM PLAYER WHERE p_nick='SumaiL'),
+                (SELECT t_id FROM TEAM WHERE t_name='Evil Geniuses'),
+                (SELECT tr_id FROM TOURNAMENT WHERE tr_name='ESL One Hamburg 2017'),
+                2,50)"""
         cursor.execute(query)
 
         query = """ CREATE TABLE ROSTER(
