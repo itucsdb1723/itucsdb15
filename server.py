@@ -98,6 +98,8 @@ def initialize_database():
         cursor.execute(query)
         query = """DROP TABLE IF EXISTS PLAYER CASCADE"""
         cursor.execute(query)
+        query = """DROP TABLE IF EXISTS TOURNAMENT CASCADE"""
+        cursor.execute(query)
 
         query = """ CREATE TABLE TEAM(
         t_id SERIAL PRIMARY KEY,
@@ -120,6 +122,24 @@ def initialize_database():
         p_mmr INTEGER,
         FOREIGN KEY(t_id) REFERENCES TEAM(t_id) ON DELETE CASCADE
         )"""
+        cursor.execute(query)
+
+        query = """CREATE TABLE TOURNAMENT (
+        tr_id SERIAL PRIMARY KEY,
+        tr_name VARCHAR(60) NOT NULL,
+        tr_date DATE,
+        tr_enddate DATE
+        )"""
+        cursor.execute(query)
+
+        query = """INSERT INTO TOURNAMENT (tr_name,tr_date,tr_enddate)
+        VALUES ('SL i-League Invitational Season 3','2017-10-12','2017-10-15')"""
+        cursor.execute(query)
+        query = """INSERT INTO TOURNAMENT (tr_name,tr_date,tr_enddate)
+        VALUES ('PGL Open Bucharest','2017-10-19','2017-10-22')"""
+        cursor.execute(query)
+        query = """INSERT INTO TOURNAMENT (tr_name,tr_date,tr_enddate)
+        VALUES ('ESL One Hamburg 2017','2017-10-26','2017-10-29')"""
         cursor.execute(query)
 
         query = """INSERT INTO TEAM (t_name,t_tag,t_region,t_created)
