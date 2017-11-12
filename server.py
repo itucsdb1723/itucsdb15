@@ -68,7 +68,8 @@ def player_profile(nick):
              ('Qualified',results[2]),
              ('Team Rank','')]
     return render_template('header.html', title="Dotabase", route="player") + \
-           render_template('profile.html', name=player_info[2], info=info, stats=stats, history=history) + \
+           render_template('profile.html', name=player_info[2], info=info, stats=stats) + \
+           render_template('teamhistory.html', history=history) + \
            render_template('footer.html')
 
 @app.route('/player')
