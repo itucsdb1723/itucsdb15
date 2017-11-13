@@ -48,6 +48,28 @@ def player_profile(nick):
         query3 = """ SELECT SUM(dpc_points),COUNT(*),COUNT(CASE WHEN tr_date<%s THEN 1 END) FROM RESULT LEFT JOIN TOURNAMENT ON RESULT.tr_id=TOURNAMENT.tr_id WHERE p_id=%s """
         cursor.execute(query3,[today,player_info[0]])
         results = cursor.fetchall()[0]
+        query4 = """ SELECT *
+                    FROM(
+                        SELECT ROW_NUMBER() OVER() as team_rank, data.*
+                        FROM (
+                            SELECT t_id, sum(dpc_points) as dpc_points
+                            FROM (
+                                SELECT ROW_NUMBER() OVER (PARTITION BY t_id ORDER BY dpc_points DESC) AS rowNumber, result.*
+                                FROM (
+                                        SELECT p_id, max(t_id) as t_id, SUM(dpc_points) AS dpc_points
+                                        FROM RESULT
+                                        GROUP BY p_id
+                                ) AS result
+                            ) AS results
+                            WHERE results.rowNumber<=3
+                            GROUP BY t_id
+                            ORDER BY dpc_points DESC
+                        ) AS data
+                    ) AS ranks
+                    WHERE t_id=%s
+                    """
+        cursor.execute(query4,[player_info[7]])
+        teamrank = cursor.fetchall()
         connection.commit()
     info =  []
     if player_info[3]!=None or player_info[4]!=None:
@@ -62,11 +84,14 @@ def player_profile(nick):
         info.append(('Team',player_info[10]))
     if player_info[8]!=None:
         info.append(('Solo MMR',player_info[8]))
-
+    if len(teamrank)>0:
+        teamrank=teamrank[0][0]
+    else:
+        teamrank=""
     stats = [('DPC Points',results[0]),
              ('Played',results[1]),
              ('Qualified',results[2]),
-             ('Team Rank','')]
+             ('Team Rank',teamrank)]
     return render_template('header.html', title="Dotabase", route="player") + \
            render_template('profile.html', name=player_info[2], info=info, ) + \
            render_template('stats.html', stats=stats) + \
@@ -128,8 +153,27 @@ def teams_page():
 def sqltest():
     with dbapi2.connect(app.config['dsn']) as connection:
         cursor = connection.cursor()
-        query = """ SELECT sum(dpc_points) FROM (SELECT ROW_NUMBER() OVER (PARTITION BY t_id ORDER BY dpc_points DESC) AS row, result.* FROM result) AS results WHERE results.row<=3 GROUP BY t_id"""
-        cursor.execute(query)
+        query = """ SELECT *
+                    FROM(
+                        SELECT ROW_NUMBER() OVER() as team_rank, data.*
+                        FROM (
+                            SELECT t_id, sum(dpc_points) as dpc_points
+                            FROM (
+                                SELECT ROW_NUMBER() OVER (PARTITION BY t_id ORDER BY dpc_points DESC) AS rowNumber, result.*
+                                FROM (
+                                        SELECT p_id, max(t_id) as t_id, SUM(dpc_points) AS dpc_points
+                                        FROM RESULT
+                                        GROUP BY p_id
+                                ) AS result
+                            ) AS results
+                            WHERE results.rowNumber<=3
+                            GROUP BY t_id
+                            ORDER BY dpc_points DESC
+                        ) AS data
+                    ) AS ranks
+                    WHERE t_id=%s
+                    """
+        cursor.execute(query,[7])
         result = cursor.fetchall()
         connection.commit()
     return str(result)
@@ -308,6 +352,30 @@ def initialize_database():
                 (SELECT t_id FROM TEAM WHERE t_name='Virtus.pro'),
                 (SELECT tr_id FROM TOURNAMENT WHERE tr_name='ESL One Hamburg 2017'),
                 1,750)
+                """
+        cursor.execute(query)
+
+        query = """INSERT INTO RESULT (p_id,t_id,tr_id,placement,dpc_points)
+        VALUES ((SELECT p_id FROM PLAYER WHERE p_nick='RAMZES666'),
+                (SELECT t_id FROM TEAM WHERE t_name='Virtus.pro'),
+                (SELECT tr_id FROM TOURNAMENT WHERE tr_name='AMD SAPPHIRE Dota PIT League'),
+                4,15),
+                ((SELECT p_id FROM PLAYER WHERE p_nick='No[o]ne'),
+                (SELECT t_id FROM TEAM WHERE t_name='Virtus.pro'),
+                (SELECT tr_id FROM TOURNAMENT WHERE tr_name='AMD SAPPHIRE Dota PIT League'),
+                4,15),
+                ((SELECT p_id FROM PLAYER WHERE p_nick='9pasha'),
+                (SELECT t_id FROM TEAM WHERE t_name='Virtus.pro'),
+                (SELECT tr_id FROM TOURNAMENT WHERE tr_name='AMD SAPPHIRE Dota PIT League'),
+                4,15),
+                ((SELECT p_id FROM PLAYER WHERE p_nick='Lil'),
+                (SELECT t_id FROM TEAM WHERE t_name='Virtus.pro'),
+                (SELECT tr_id FROM TOURNAMENT WHERE tr_name='AMD SAPPHIRE Dota PIT League'),
+                4,15),
+                ((SELECT p_id FROM PLAYER WHERE p_nick='Solo'),
+                (SELECT t_id FROM TEAM WHERE t_name='Virtus.pro'),
+                (SELECT tr_id FROM TOURNAMENT WHERE tr_name='AMD SAPPHIRE Dota PIT League'),
+                4,15)
                 """
         cursor.execute(query)
 
