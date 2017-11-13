@@ -124,6 +124,16 @@ def teams_page():
            render_template('list.html', title="All Teams", route="team", items=teams, index=1) + \
            render_template('footer.html')
 
+@app.route('/sqltest')
+def sqltest():
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor = connection.cursor()
+        query = """ SELECT sum(dpc_points) FROM (SELECT ROW_NUMBER() OVER (PARTITION BY t_id ORDER BY dpc_points DESC) AS row, result.* FROM result) AS results WHERE results.row<=3 GROUP BY t_id"""
+        cursor.execute(query)
+        result = cursor.fetchall()
+        connection.commit()
+    return str(result)
+
 @app.route('/initdb')
 def initialize_database():
     with dbapi2.connect(app.config['dsn']) as connection:
@@ -181,15 +191,39 @@ def initialize_database():
         query = """INSERT INTO TOURNAMENT (tr_name,tr_date,tr_enddate)
         VALUES ('ESL One Hamburg 2017','2017-10-26','2017-10-29')"""
         cursor.execute(query)
+        query = """INSERT INTO TOURNAMENT (tr_name,tr_date,tr_enddate)
+        VALUES ('AMD SAPPHIRE Dota PIT League','2017-11-02','2017-11-05')"""
+        cursor.execute(query)
 
         query = """INSERT INTO TEAM (t_name,t_tag,t_region,t_created)
         VALUES ('Evil Geniuses','EG',1,'2011-10-24')"""
+        cursor.execute(query)
+        query = """INSERT INTO TEAM (t_name,t_tag,t_region,t_created)
+        VALUES ('compLexity Gaming','coL',1,'2012-02-16')"""
+        cursor.execute(query)
+        query = """INSERT INTO TEAM (t_name,t_tag,t_region,t_created)
+        VALUES ('Immortals','IMT',1,'2017-09-13')"""
         cursor.execute(query)
         query = """INSERT INTO TEAM (t_name,t_tag,t_region)
         VALUES ('Mineski','Mski',5)"""
         cursor.execute(query)
         query = """INSERT INTO TEAM (t_name,t_tag,t_region,t_created)
-        VALUES ('Team Liquid','Liquid ',3,'2012-12-06')"""
+        VALUES ('Team Liquid','Liquid',3,'2012-12-06')"""
+        cursor.execute(query)
+        query = """INSERT INTO TEAM (t_name,t_tag,t_region,t_created)
+        VALUES ('Virtus.pro','VP',2,'2003-01-01')"""
+        cursor.execute(query)
+        query = """INSERT INTO TEAM (t_name,t_tag,t_region,t_created)
+        VALUES ('Team Secret','Secret',3,'2014-08-27')"""
+        cursor.execute(query)
+        query = """INSERT INTO TEAM (t_name,t_tag,t_region,t_created)
+        VALUES ('Newbee','Newbee',4,'2014-02-13')"""
+        cursor.execute(query)
+        query = """INSERT INTO TEAM (t_name,t_tag,t_region,t_created)
+        VALUES ('Vici Gaming','VG',4,'2012-09-21')"""
+        cursor.execute(query)
+        query = """INSERT INTO TEAM (t_name,t_tag,t_region,t_created)
+        VALUES ('LGD Gaming','VG',4,'2009-01-01')"""
         cursor.execute(query)
 
         query = """INSERT INTO PLAYER (p_nick,p_name,p_surname,p_country,p_birth,p_mmr,t_id)
@@ -198,21 +232,54 @@ def initialize_database():
         query = """INSERT INTO PLAYER (p_nick,p_name,p_surname,p_country,p_birth,p_mmr,t_id)
         VALUES ('MATUMBAMAN','Lasse Aukusti','Urpalainen','FI','1995-03-03','9421',(SELECT t_id FROM TEAM WHERE t_name LIKE 'Team Liquid'))"""
         cursor.execute(query)
-        query = """INSERT INTO PLAYER (p_nick,p_name,p_surname,p_country,p_birth)
-        VALUES ('Miracle-','Amer','Al-Barqawi','JO','1997-06-20')"""
+        query = """INSERT INTO PLAYER (p_nick,p_name,p_surname,p_country,p_birth,t_id)
+        VALUES ('Miracle-','Amer','Al-Barqawi','JO','1997-06-20',(SELECT t_id FROM TEAM WHERE t_name='Team Liquid'))"""
         cursor.execute(query)
 
-        query = """INSERT INTO PLAYER (p_nick) VALUES ('RAMZES666')"""
+        query = """INSERT INTO PLAYER (p_nick,t_id) VALUES ('RAMZES666',(SELECT t_id FROM TEAM WHERE t_name='Virtus.pro'))"""
         cursor.execute(query)
-        query = """INSERT INTO PLAYER (p_nick) VALUES ('MidOne')"""
+        query = """INSERT INTO PLAYER (p_nick,t_id) VALUES ('No[o]ne',(SELECT t_id FROM TEAM WHERE t_name='Virtus.pro'))"""
         cursor.execute(query)
+        query = """INSERT INTO PLAYER (p_nick,t_id) VALUES ('9pasha',(SELECT t_id FROM TEAM WHERE t_name='Virtus.pro'))"""
+        cursor.execute(query)
+        query = """INSERT INTO PLAYER (p_nick,t_id) VALUES ('Lil',(SELECT t_id FROM TEAM WHERE t_name='Virtus.pro'))"""
+        cursor.execute(query)
+        query = """INSERT INTO PLAYER (p_nick,t_id) VALUES ('Solo',(SELECT t_id FROM TEAM WHERE t_name='Virtus.pro'))"""
+        cursor.execute(query)
+        query = """INSERT INTO PLAYER (p_nick,t_id) VALUES ('Ace',(SELECT t_id FROM TEAM WHERE t_name='Team Secret'))"""
+        cursor.execute(query)
+        query = """INSERT INTO PLAYER (p_nick,t_id) VALUES ('MidOne',(SELECT t_id FROM TEAM WHERE t_name='Team Secret'))"""
+        cursor.execute(query)
+        query = """INSERT INTO PLAYER (p_nick,t_id) VALUES ('Fata',(SELECT t_id FROM TEAM WHERE t_name='Team Secret'))"""
+        cursor.execute(query)
+        query = """INSERT INTO PLAYER (p_nick,t_id) VALUES ('YapzOr',(SELECT t_id FROM TEAM WHERE t_name='Team Secret'))"""
+        cursor.execute(query)
+        query = """INSERT INTO PLAYER (p_nick,t_id) VALUES ('Puppey',(SELECT t_id FROM TEAM WHERE t_name='Team Secret'))"""
+        cursor.execute(query)
+        query = """INSERT INTO PLAYER (p_nick,t_id) VALUES ('MinD_ContRoL',(SELECT t_id FROM TEAM WHERE t_name='Team Liquid'))"""
+        cursor.execute(query)
+        query = """INSERT INTO PLAYER (p_nick,t_id) VALUES ('GH',(SELECT t_id FROM TEAM WHERE t_name='Team Liquid'))"""
+        cursor.execute(query)
+        query = """INSERT INTO PLAYER (p_nick,t_id) VALUES ('KuroKy',(SELECT t_id FROM TEAM WHERE t_name='Team Liquid'))"""
+        cursor.execute(query)
+        query = """INSERT INTO PLAYER (p_nick,t_id) VALUES ('NaNa',(SELECT t_id FROM TEAM WHERE t_name='Mineski'))"""
+        cursor.execute(query)
+        query = """INSERT INTO PLAYER (p_nick,t_id) VALUES ('Mushi',(SELECT t_id FROM TEAM WHERE t_name='Mineski'))"""
+        cursor.execute(query)
+        query = """INSERT INTO PLAYER (p_nick,t_id) VALUES ('iceiceice',(SELECT t_id FROM TEAM WHERE t_name='Mineski'))"""
+        cursor.execute(query)
+        query = """INSERT INTO PLAYER (p_nick,t_id) VALUES ('Jabz',(SELECT t_id FROM TEAM WHERE t_name='Mineski'))"""
+        cursor.execute(query)
+        query = """INSERT INTO PLAYER (p_nick,t_id) VALUES ('ninjaboogie',(SELECT t_id FROM TEAM WHERE t_name='Mineski'))"""
+        cursor.execute(query)
+
 
         query = """CREATE TABLE RESULT (
         p_id INTEGER NOT NULL,
         t_id INTEGER NOT NULL,
         tr_id INTEGER NOT NULL,
         placement INTEGER,
-        dpc_points INTEGER,
+        dpc_points REAL,
         prize INTEGER,
         FOREIGN KEY(p_id) REFERENCES PLAYER(p_id) ON DELETE CASCADE,
         FOREIGN KEY(t_id) REFERENCES TEAM(t_id) ON DELETE CASCADE,
@@ -221,16 +288,75 @@ def initialize_database():
         cursor.execute(query)
 
         query = """INSERT INTO RESULT (p_id,t_id,tr_id,placement,dpc_points)
-        VALUES ((SELECT p_id FROM PLAYER WHERE p_nick='SumaiL'),
-                (SELECT t_id FROM TEAM WHERE t_name='Evil Geniuses'),
-                (SELECT tr_id FROM TOURNAMENT WHERE tr_name='PGL Open Bucharest'),
-                3,30)"""
-        cursor.execute(query)
-        query = """INSERT INTO RESULT (p_id,t_id,tr_id,placement,dpc_points)
-        VALUES ((SELECT p_id FROM PLAYER WHERE p_nick='SumaiL'),
-                (SELECT t_id FROM TEAM WHERE t_name='Evil Geniuses'),
+        VALUES ((SELECT p_id FROM PLAYER WHERE p_nick='RAMZES666'),
+                (SELECT t_id FROM TEAM WHERE t_name='Virtus.pro'),
                 (SELECT tr_id FROM TOURNAMENT WHERE tr_name='ESL One Hamburg 2017'),
-                2,50)"""
+                1,750),
+                ((SELECT p_id FROM PLAYER WHERE p_nick='No[o]ne'),
+                (SELECT t_id FROM TEAM WHERE t_name='Virtus.pro'),
+                (SELECT tr_id FROM TOURNAMENT WHERE tr_name='ESL One Hamburg 2017'),
+                1,750),
+                ((SELECT p_id FROM PLAYER WHERE p_nick='9pasha'),
+                (SELECT t_id FROM TEAM WHERE t_name='Virtus.pro'),
+                (SELECT tr_id FROM TOURNAMENT WHERE tr_name='ESL One Hamburg 2017'),
+                1,750),
+                ((SELECT p_id FROM PLAYER WHERE p_nick='Lil'),
+                (SELECT t_id FROM TEAM WHERE t_name='Virtus.pro'),
+                (SELECT tr_id FROM TOURNAMENT WHERE tr_name='ESL One Hamburg 2017'),
+                1,750),
+                ((SELECT p_id FROM PLAYER WHERE p_nick='Solo'),
+                (SELECT t_id FROM TEAM WHERE t_name='Virtus.pro'),
+                (SELECT tr_id FROM TOURNAMENT WHERE tr_name='ESL One Hamburg 2017'),
+                1,750)
+                """
+        cursor.execute(query)
+
+        query = """INSERT INTO RESULT (p_id,t_id,tr_id,placement,dpc_points)
+        VALUES ((SELECT p_id FROM PLAYER WHERE p_nick='Ace'),
+                (SELECT t_id FROM TEAM WHERE t_name='Team Secret'),
+                (SELECT tr_id FROM TOURNAMENT WHERE tr_name='ESL One Hamburg 2017'),
+                2,450),
+                ((SELECT p_id FROM PLAYER WHERE p_nick='MidOne'),
+                (SELECT t_id FROM TEAM WHERE t_name='Team Secret'),
+                (SELECT tr_id FROM TOURNAMENT WHERE tr_name='ESL One Hamburg 2017'),
+                2,450),
+                ((SELECT p_id FROM PLAYER WHERE p_nick='Fata'),
+                (SELECT t_id FROM TEAM WHERE t_name='Team Secret'),
+                (SELECT tr_id FROM TOURNAMENT WHERE tr_name='ESL One Hamburg 2017'),
+                2,450),
+                ((SELECT p_id FROM PLAYER WHERE p_nick='YapzOr'),
+                (SELECT t_id FROM TEAM WHERE t_name='Team Secret'),
+                (SELECT tr_id FROM TOURNAMENT WHERE tr_name='ESL One Hamburg 2017'),
+                2,450),
+                ((SELECT p_id FROM PLAYER WHERE p_nick='Puppey'),
+                (SELECT t_id FROM TEAM WHERE t_name='Team Secret'),
+                (SELECT tr_id FROM TOURNAMENT WHERE tr_name='ESL One Hamburg 2017'),
+                2,450)
+                """
+        cursor.execute(query)
+
+        query = """INSERT INTO RESULT (p_id,t_id,tr_id,placement,dpc_points)
+        VALUES ((SELECT p_id FROM PLAYER WHERE p_nick='MATUMBAMAN'),
+                (SELECT t_id FROM TEAM WHERE t_name='Team Liquid'),
+                (SELECT tr_id FROM TOURNAMENT WHERE tr_name='ESL One Hamburg 2017'),
+                3,150),
+                ((SELECT p_id FROM PLAYER WHERE p_nick='Miracle-'),
+                (SELECT t_id FROM TEAM WHERE t_name='Team Liquid'),
+                (SELECT tr_id FROM TOURNAMENT WHERE tr_name='ESL One Hamburg 2017'),
+                3,150),
+                ((SELECT p_id FROM PLAYER WHERE p_nick='MinD_ContRoL'),
+                (SELECT t_id FROM TEAM WHERE t_name='Team Liquid'),
+                (SELECT tr_id FROM TOURNAMENT WHERE tr_name='ESL One Hamburg 2017'),
+                3,150),
+                ((SELECT p_id FROM PLAYER WHERE p_nick='GH'),
+                (SELECT t_id FROM TEAM WHERE t_name='Team Liquid'),
+                (SELECT tr_id FROM TOURNAMENT WHERE tr_name='ESL One Hamburg 2017'),
+                3,150),
+                ((SELECT p_id FROM PLAYER WHERE p_nick='KuroKy'),
+                (SELECT t_id FROM TEAM WHERE t_name='Team Liquid'),
+                (SELECT tr_id FROM TOURNAMENT WHERE tr_name='ESL One Hamburg 2017'),
+                3,150)
+                """
         cursor.execute(query)
 
         query = """ CREATE TABLE ROSTER(
