@@ -85,22 +85,22 @@ def players_page():
            render_template('list.html', title="All Players", route="player", items=players, index =2) + \
            render_template('footer.html')
 
-@app.route('/team/<ttag>'):
-def team_profile(ttag):
+@app.route('/team/<tname>')
+def team_profile(tname):
     with dbapi2.connect(app.config['dsn']) as connection:
         cursor = connection.cursor()
-        query = """ SELECT * FROM TEAM WHERE t_tag=%s"""
-        cursor.execute(query,[ttag])
+        query = """ SELECT * FROM TEAM WHERE t_name=%s"""
+        cursor.execute(query,[tname])
         team_info = cursor.fetchall()[0]
-        query2 = """ SELECT p_id,join_date,leave_date,position,is_captain FROM ROSTER WHERE ROSTER.t_id = %s ORDER BY position ASC """
-        cursor.execute(query,[ttag])
+        query2 = """ SELECT p_id,join_date,leave_date,position,is_captain FROM ROSTER WHERE ROSTER.t_name = %s ORDER BY position ASC """ #Will bring all roster.
+        cursor.execute(query,[tname])
         roster_info = cursor.fetchall()
-        query3 = """SELECT tr_name,tr_date,tr_enddate,placement,prize FROM TOURNAMENT JOIN RESULT ON  TOURNAMENT.tr_id = RESULT.tr_id AND RESULT.t_id = %s GROUP BY TOURNAMENT.tr_name ORDER BY TOURNAMENT.tr_date DESC"""
-        cursor.execute(query,[ttag])
+        query3 = """SELECT tr_name,tr_date,tr_enddate,placement,prize FROM TOURNAMENT JOIN RESULT ON  TOURNAMENT.tr_id = RESULT.tr_id AND RESULT.t_name = %s GROUP BY TOURNAMENT.tr_name ORDER BY TOURNAMENT.tr_date DESC"""
+        cursor.execute(query,[tname])
         tournament_info = cursor.fetchall()
         connection.commit()
         info = []
-        if team_info[1]!=None
+        if team_info[1]!=None:
             info.append(('Team Name',team_info[1]))
         if team_info[2]!=None:
             info.append(('Team Tag',team_info[2]))
@@ -108,7 +108,9 @@ def team_profile(ttag):
             info.append(('Team Region',team_info[3]))
         if team_info[4]!=None:
             info.append(('Created',team_info[4]))
-        
+        return render_template('header.html', title="Dotabase", route="team") + \
+               render_template('profile.html', name=team_info[1], info=info, ) + \
+               render_template('footer.html')
 
 @app.route('/team')
 def teams_page():
