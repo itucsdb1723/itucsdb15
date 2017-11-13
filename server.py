@@ -70,6 +70,13 @@ def player_profile(nick):
                     """
         cursor.execute(query4,[player_info[7]])
         teamrank = cursor.fetchall()
+        query5 = """ SELECT tr_name, tr_enddate, placement, dpc_points, prize
+                    FROM RESULT LEFT JOIN TOURNAMENT ON RESULT.tr_id=TOURNAMENT.tr_id
+                    WHERE p_id=%s
+                    ORDER BY tr_enddate DESC
+                """
+        cursor.execute(query5,[player_info[0]])
+        resultlist = cursor.fetchall()
         connection.commit()
     info =  []
     if player_info[3]!=None or player_info[4]!=None:
@@ -95,6 +102,7 @@ def player_profile(nick):
     return render_template('header.html', title="Dotabase", route="player") + \
            render_template('profile.html', name=player_info[2], info=info, ) + \
            render_template('stats.html', stats=stats) + \
+           render_template('results.html', results=resultlist) + \
            render_template('teamhistory.html', history=history) + \
            render_template('footer.html')
 
@@ -153,27 +161,11 @@ def teams_page():
 def sqltest():
     with dbapi2.connect(app.config['dsn']) as connection:
         cursor = connection.cursor()
-        query = """ SELECT *
-                    FROM(
-                        SELECT ROW_NUMBER() OVER() as team_rank, data.*
-                        FROM (
-                            SELECT t_id, sum(dpc_points) as dpc_points
-                            FROM (
-                                SELECT ROW_NUMBER() OVER (PARTITION BY t_id ORDER BY dpc_points DESC) AS rowNumber, result.*
-                                FROM (
-                                        SELECT p_id, max(t_id) as t_id, SUM(dpc_points) AS dpc_points
-                                        FROM RESULT
-                                        GROUP BY p_id
-                                ) AS result
-                            ) AS results
-                            WHERE results.rowNumber<=3
-                            GROUP BY t_id
-                            ORDER BY dpc_points DESC
-                        ) AS data
-                    ) AS ranks
-                    WHERE t_id=%s
-                    """
-        cursor.execute(query,[7])
+        query = """ SELECT tr_name, tr_date, tr_enddate, placement, dpc_points, prize
+                    FROM RESULT LEFT JOIN TOURNAMENT ON RESULT.tr_id=TOURNAMENT.tr_id
+                    WHERE p_id=%s
+                """
+        cursor.execute(query,[4])
         result = cursor.fetchall()
         connection.commit()
     return str(result)

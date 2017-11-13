@@ -1,0 +1,21 @@
+<div class="card mb-3">
+  <div class="card-header bg-dark text-light">Results</div>
+  <div class="card-body">
+    <div class="row">
+      <div class="col-5"><strong>Tournament Name</strong></div>
+      <div class="col-2 text-center"><strong>Date</strong></div>
+      <div class="col-1 text-center"><strong>Plc.</strong></div>
+      <div class="col-2 text-center"><strong>DPC</strong></div>
+      <div class="col-2 text-center"><strong>Prize</strong></div>
+    </div>
+    {% for item in results %}
+    <div class="row">
+      <div class="col-5">{{ item[0] }}</div>
+      <div class="col-2 text-center">{{ item[1] }}</div>
+      <div class="col-1 text-center">#{{ item[2] }}</div>
+      <div class="col-2 text-center">{{ item[3] }}</div>
+      <div class="col-2 text-center">{{ item[4] }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
