@@ -68,7 +68,8 @@ def player_profile(nick):
              ('Qualified',results[2]),
              ('Team Rank','')]
     return render_template('header.html', title="Dotabase", route="player") + \
-           render_template('profile.html', name=player_info[2], info=info, stats=stats) + \
+           render_template('profile.html', name=player_info[2], info=info, ) + \
+           render_template('stats.html', stats=stats) + \
            render_template('teamhistory.html', history=history) + \
            render_template('footer.html')
 
@@ -83,6 +84,31 @@ def players_page():
     return render_template('header.html', title="Dotabase", route="player") + \
            render_template('list.html', title="All Players", route="player", items=players, index =2) + \
            render_template('footer.html')
+
+@app.route('/team/<ttag>'):
+def team_profile(ttag):
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor = connection.cursor()
+        query = """ SELECT * FROM TEAM WHERE t_tag=%s"""
+        cursor.execute(query,[ttag])
+        team_info = cursor.fetchall()[0]
+        query2 = """ SELECT p_id,join_date,leave_date,position,is_captain FROM ROSTER WHERE ROSTER.t_id = %s ORDER BY position ASC """
+        cursor.execute(query,[ttag])
+        roster_info = cursor.fetchall()
+        query3 = """SELECT tr_name,tr_date,tr_enddate,placement,prize FROM TOURNAMENT JOIN RESULT ON  TOURNAMENT.tr_id = RESULT.tr_id AND RESULT.t_id = %s GROUP BY TOURNAMENT.tr_name ORDER BY TOURNAMENT.tr_date DESC"""
+        cursor.execute(query,[ttag])
+        tournament_info = cursor.fetchall()
+        connection.commit()
+        info = []
+        if team_info[1]!=None
+            info.append(('Team Name',team_info[1]))
+        if team_info[2]!=None:
+            info.append(('Team Tag',team_info[2]))
+        if team_info[3]!=None:
+            info.append(('Team Region',team_info[3]))
+        if team_info[4]!=None:
+            info.append(('Created',team_info[4]))
+        
 
 @app.route('/team')
 def teams_page():
@@ -140,6 +166,7 @@ def initialize_database():
         tr_name VARCHAR(60) NOT NULL,
         tr_date DATE,
         tr_enddate DATE
+
         )"""
         cursor.execute(query)
 
