@@ -1,0 +1,17 @@
+<div class="card mb-3">
+  <div class="card-header bg-dark text-light">{{mainTitle}}</div>
+  <div class="card-body">
+    <div class="row">
+      {% for title  in titles %}
+      <div class="col-{{colSizes[loop.index0]}} {% if  loop.index0 > 0 %} text-center {% endif %}"><strong>{{title}}</strong></div>
+      {% endfor %}
+    </div>
+    {% for itemArray in items %}
+    <div class="row">
+      {% for item in itemArray %}
+      <div class="col-{{colSizes[loop.index0]}} {% if  loop.index0 > 0 %} text-center {% endif %}">{{item}}</div>
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+</div>

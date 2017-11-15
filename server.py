@@ -99,11 +99,15 @@ def player_profile(nick):
              ('Played',results[1]),
              ('Qualified',results[2]),
              ('Team Rank',teamrank)]
+    resultTitles = ['Tournament Name','Date','Plc.','DPC','Prize']
+    resultColArray = ['5','2','1','2','2']
+    historyTitles= ['Team Name','Join Date','Leave Date','Position','Captain']
+    historyColArray = ['3','3','2','2','2']
     return render_template('header.html', title="Dotabase", route="player") + \
            render_template('profile.html', name=player_info[2], info=info, ) + \
            render_template('stats.html', stats=stats) + \
-           render_template('results.html', results=resultlist) + \
-           render_template('teamhistory.html', history=history) + \
+           render_template('listcard.html', mainTitle='Results',items=resultlist,titles=resultTitles,colSizes=resultColArray) + \
+           render_template('listcard.html', mainTitle='Team History',items=history,titles=historyTitles,colSizes=historyColArray) + \
            render_template('footer.html')
 
 @app.route('/player')
