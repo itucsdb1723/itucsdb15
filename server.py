@@ -5,7 +5,7 @@ import re
 import psycopg2 as dbapi2
 from datetime import date
 
-from flask import Flask
+from flask import Flask, jsonify
 from flask import redirect
 from flask import render_template
 from flask.helpers import url_for
@@ -129,13 +129,12 @@ def team_profile(tname):
         query = """ SELECT * FROM TEAM WHERE t_name=%s"""
         cursor.execute(query,[tname])
         team_info = cursor.fetchall()[0]
-        query2 = """ SELECT p_id,join_date,leave_date,position,is_captain FROM ROSTER WHERE ROSTER.t_name = %s ORDER BY join_date ASC """ #Will bring all roster.
-        cursor.execute(query,[tname])
-        roster_info = cursor.fetchall()
-        query3 = """  SELECT leave_date,position,is_captain FROM ROSTER WHERE ROSTER.t_name = %s ORDER BY position ASC """
-        query4 = """SELECT tr_name,tr_date,tr_enddate,placement,prize FROM TOURNAMENT JOIN RESULT ON  TOURNAMENT.tr_id = RESULT.tr_id AND RESULT.t_name = %s GROUP BY TOURNAMENT.tr_name ORDER BY TOURNAMENT.tr_date DESC"""
-        cursor.execute(query,[tname])
-        tournament_info = cursor.fetchall()
+        query2 = """SELECT p_nick,join_date,leave_date,position,is_captain FROM ROSTER LEFT JOIN PLAYER ON ROSTER.p_id=PLAYER.p_id WHERE ROSTER.t_id = %s ORDER BY position ASC, leave_date DESC """
+        cursor.execute(query2,[team_info[0]])
+        rosterList = cursor.fetchall()
+        query3 = """SELECT tr_name,tr_enddate,placement,dpc_points,prize FROM (SELECT tr_id,placement,sum(prize) as prize,SUM(dpc_points) as dpc_points FROM RESULT WHERE RESULT.t_id = %s GROUP BY tr_id,placement) AS RESULT LEFT JOIN TOURNAMENT ON RESULT.tr_id=TOURNAMENT.tr_id ORDER BY tr_enddate DESC """
+        cursor.execute(query3,[team_info[0]])
+        resultList = cursor.fetchall()
         connection.commit()
         info = []
         if team_info[1]!=None:
@@ -146,12 +145,14 @@ def team_profile(tname):
             info.append(('Team Region',team_info[3]))
         if team_info[4]!=None:
             info.append(('Created',team_info[4]))
-        for value in roster_info:
-            value
-
+        rosterTitles= ['Player','Join Date','Leave Date','Position','Captain']
+        rosterColArray = ['3','3','2','2','2']
+        resultTitles = ['Tournament Name','Date','Plc.','DPC Pts.','Prize']
+        resultColArray = ['5','2','1','2','2']
         return render_template('header.html', title="Dotabase", route="team") + \
                render_template('profile.html', name=team_info[1], info=info, ) + \
-               render_template('roster.html', items=items) +\
+               render_template('listcard.html', mainTitle='Roster', items=rosterList, titles=rosterTitles, colSizes=rosterColArray) + \
+               render_template('listcard.html', mainTitle='Result', items=resultList, titles=resultTitles, colSizes=resultColArray) + \
                render_template('footer.html')
 
 @app.route('/team')
@@ -170,14 +171,14 @@ def teams_page():
 def sqltest():
     with dbapi2.connect(app.config['dsn']) as connection:
         cursor = connection.cursor()
-        query = """ SELECT tr_name, tr_date, tr_enddate, placement, dpc_points, prize
-                    FROM RESULT LEFT JOIN TOURNAMENT ON RESULT.tr_id=TOURNAMENT.tr_id
-                    WHERE p_id=%s
+        query = """ SELECT *
+                    FROM RESULT LEFT JOIN PLAYER ON PLAYER.p_id=RESULT.p_id
+                    WHERE RESULT.t_id=%s
                 """
-        cursor.execute(query,[4])
+        cursor.execute(query,[6])
         result = cursor.fetchall()
         connection.commit()
-    return str(result)
+    return jsonify(result)
 
 @app.route('/initdb')
 def initialize_database():
@@ -336,7 +337,7 @@ def initialize_database():
         VALUES ((SELECT p_id FROM PLAYER WHERE p_nick='RAMZES666'),
                 (SELECT t_id FROM TEAM WHERE t_name='Virtus.pro'),
                 (SELECT tr_id FROM TOURNAMENT WHERE tr_name='ESL One Hamburg 2017'),
-                1,750),
+                1,650),
                 ((SELECT p_id FROM PLAYER WHERE p_nick='No[o]ne'),
                 (SELECT t_id FROM TEAM WHERE t_name='Virtus.pro'),
                 (SELECT tr_id FROM TOURNAMENT WHERE tr_name='ESL One Hamburg 2017'),
