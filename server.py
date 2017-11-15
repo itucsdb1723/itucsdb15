@@ -92,10 +92,11 @@ def team_profile(tname):
         query = """ SELECT * FROM TEAM WHERE t_name=%s"""
         cursor.execute(query,[tname])
         team_info = cursor.fetchall()[0]
-        query2 = """ SELECT p_id,join_date,leave_date,position,is_captain FROM ROSTER WHERE ROSTER.t_name = %s ORDER BY position ASC """ #Will bring all roster.
+        query2 = """ SELECT p_id,join_date,leave_date,position,is_captain FROM ROSTER WHERE ROSTER.t_name = %s ORDER BY join_date ASC """ #Will bring all roster.
         cursor.execute(query,[tname])
         roster_info = cursor.fetchall()
-        query3 = """SELECT tr_name,tr_date,tr_enddate,placement,prize FROM TOURNAMENT JOIN RESULT ON  TOURNAMENT.tr_id = RESULT.tr_id AND RESULT.t_name = %s GROUP BY TOURNAMENT.tr_name ORDER BY TOURNAMENT.tr_date DESC"""
+        query3 = """  SELECT leave_date,position,is_captain FROM ROSTER WHERE ROSTER.t_name = %s ORDER BY position ASC """
+        query4 = """SELECT tr_name,tr_date,tr_enddate,placement,prize FROM TOURNAMENT JOIN RESULT ON  TOURNAMENT.tr_id = RESULT.tr_id AND RESULT.t_name = %s GROUP BY TOURNAMENT.tr_name ORDER BY TOURNAMENT.tr_date DESC"""
         cursor.execute(query,[tname])
         tournament_info = cursor.fetchall()
         connection.commit()
@@ -108,8 +109,12 @@ def team_profile(tname):
             info.append(('Team Region',team_info[3]))
         if team_info[4]!=None:
             info.append(('Created',team_info[4]))
+        for value in roster_info:
+            value
+
         return render_template('header.html', title="Dotabase", route="team") + \
                render_template('profile.html', name=team_info[1], info=info, ) + \
+               render_template('roster.html', items=items) +\
                render_template('footer.html')
 
 @app.route('/team')
