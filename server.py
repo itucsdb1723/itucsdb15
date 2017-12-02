@@ -25,7 +25,7 @@ def get_elephantsql_dsn(vcap_services):
     dsn = """user='{}' password='{}' host='{}' port={}
              dbname='{}'""".format(user, password, host, port, dbname)
     return dsn
-sss
+
 
 @app.route('/home')
 @app.route('/')
@@ -167,6 +167,28 @@ def teams_page():
            render_template('list.html', title="All Teams", route="team", items=teams, index=1) + \
            render_template('footer.html')
 
+@app.route('/tournaments/<trname>')
+def tournament_profile(trname):
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor = connection.cursor()
+        query = """ SELECT * FROM TOURNAMENT WHERE tr_name=%s"""
+        cursor.execute(query,[trname])
+        tournament_info = cursor.fetchall()[0]
+
+
+
+@app.route('/tournaments')
+def tournaments_page():
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor = connection.cursor()
+        query = """ SELECT * FROM TOURNAMENT """
+        cursor.execute(query)
+        tournaments = cursor.fetchall()
+        connection.commit()
+    return render_template('header.html', title="Dotabase", route="tournaments") + \
+           render_template('list.html', title="All Tournaments", route="tournaments", items=tournaments, index=1) + \
+           render_template('footer.html')
+
 @app.route('/sqltest')
 def sqltest():
     with dbapi2.connect(app.config['dsn']) as connection:
@@ -194,6 +216,12 @@ def initialize_database():
         query = """DROP TABLE IF EXISTS TOURNAMENT CASCADE"""
         cursor.execute(query)
         query = """DROP TABLE IF EXISTS RESULT CASCADE"""
+        cursor.execute(query)
+        query = """DROP TABLE IF EXISTS BRACKET CASCADE"""
+        cursor.execute(query)
+        query = """DROP TABLE IF EXISTS COMPETITOR CASCADE"""
+        cursor.execute(query)
+        query = """DROP TABLE IF EXISTS MATCH CASCADE"""
         cursor.execute(query)
 
         query = """ CREATE TABLE TEAM(
@@ -223,8 +251,38 @@ def initialize_database():
         tr_id SERIAL PRIMARY KEY,
         tr_name VARCHAR(60) NOT NULL,
         tr_date DATE,
-        tr_enddate DATE
+        tr_enddate DATE,
+        parent_tr_id INTEGER,
+        FOREIGN KEY(parent_tr_id) REFERENCES TOURNAMENT(tr_id) ON DELETE CASCADE
+        )"""
+        cursor.execute(query)
 
+        query = """ CREATE TABLE BRACKET(
+        br_id SERIAL PRIMARY KEY,
+        team_count INTEGER,
+        type INTEGER,
+        tr_id INTEGER,
+        FOREIGN KEY(tr_id) REFERENCES TOURNAMENT(tr_id) ON DELETE CASCADE
+        )"""
+
+        cursor.execute(query)
+
+        query = """ CREATE TABLE COMPETITOR(
+        br_id INTEGER,
+        t_id INTEGER,
+        t_id_2 INTEGER,
+        FOREIGN KEY(br_id) REFERENCES BRACKET(br_id) ON DELETE CASCADE,
+        FOREIGN KEY(t_id) REFERENCES TEAM(t_id) ON DELETE CASCADE,
+        FOREIGN KEY(t_id_2) REFERENCES TEAM(t_id) ON DELETE CASCADE
+        )"""
+
+        cursor.execute(query)
+
+        query = """ CREATE TABLE MATCH(
+        t_id INTEGER REFERENCES TEAM(t_id) ON DELETE CASCADE,
+        br_id INTEGER,
+        result INTEGER,
+        FOREIGN KEY(br_id) REFERENCES BRACKET(br_id) ON DELETE CASCADE
         )"""
         cursor.execute(query)
 
