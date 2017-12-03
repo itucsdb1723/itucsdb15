@@ -263,11 +263,11 @@ def initialize_database():
         FOREIGN KEY(parent_tr_id) REFERENCES TOURNAMENT(tr_id) ON DELETE CASCADE
         )"""
         cursor.execute(query)
-
+        #If br_tree = 0 , It means its a group.1 means final ,2 means semi and  so on.
         query = """ CREATE TABLE BRACKET(
         br_id SERIAL PRIMARY KEY,
         team_count INTEGER,
-        br_type BOOLEAN,
+        br_tree SMALLINT,
         tr_id INTEGER,
         FOREIGN KEY(tr_id) REFERENCES TOURNAMENT(tr_id) ON DELETE CASCADE
         )"""
