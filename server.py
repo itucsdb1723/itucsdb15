@@ -174,8 +174,15 @@ def tournament_profile(trname):
         query = """ SELECT * FROM TOURNAMENT WHERE tr_name=%s"""
         cursor.execute(query,[trname])
         tournament_info = cursor.fetchall()[0]
-
-
+        query2 = """SELECT t_id,t_id_2,MATCH.br_id,m_type,result,t_1_score,t_2_score,br_type FROM MATCH LEFT JOIN BRACKET WHERE MATCH.br_id IN (SELECT  br_id FROM BRACKET WHERE BRACKET.tr_id = %s ) ORDER BY br_id,br_type"""
+        cursor.execute(query,[tournament_info[0]])
+        bracketMatches = cursor.fetchall()
+        #TO DO: FIND BRACKET TYPES -> IF EXIST DRAW & DO PROPER THINGS FOR EACH BRACKET TYPE.
+        #GROUPS -> DRAW TABLE ACCORDING TO WIN-LOSS NUMBERS
+        #PLAYOFFS ->DRAW BRACKET GRAPH.(LAST 16, SEMI, FINAL ETC).
+        #CREATE GROUP AND PLAYOFF TEMPLATE.
+        #ALSO MATCH INFO CAN BE ADDED WHEN HOVERED OVER TEAM'S NAME.
+        #ALSO MATCH PAGES CAN BE ADDED ACCORDING TO MATCH ID'S
 
 @app.route('/tournaments')
 def tournaments_page():
@@ -260,28 +267,33 @@ def initialize_database():
         query = """ CREATE TABLE BRACKET(
         br_id SERIAL PRIMARY KEY,
         team_count INTEGER,
-        type INTEGER,
+        br_type BOOLEAN,
         tr_id INTEGER,
         FOREIGN KEY(tr_id) REFERENCES TOURNAMENT(tr_id) ON DELETE CASCADE
         )"""
 
         cursor.execute(query)
+        #DO WE REALLY NEED THIS?
+        #query = """ CREATE TABLE COMPETITOR(
+        #br_id INTEGER,
+        #t_id INTEGER,
+        #FOREIGN KEY(br_id) REFERENCES BRACKET(br_id) ON DELETE CASCADE,
+        #FOREIGN KEY(t_id) REFERENCES TEAM(t_id) ON DELETE CASCADE
+        #)"""
 
-        query = """ CREATE TABLE COMPETITOR(
-        br_id INTEGER,
-        t_id INTEGER,
-        t_id_2 INTEGER,
-        FOREIGN KEY(br_id) REFERENCES BRACKET(br_id) ON DELETE CASCADE,
-        FOREIGN KEY(t_id) REFERENCES TEAM(t_id) ON DELETE CASCADE,
-        FOREIGN KEY(t_id_2) REFERENCES TEAM(t_id) ON DELETE CASCADE
-        )"""
-
-        cursor.execute(query)
+        #cursor.execute(query)
 
         query = """ CREATE TABLE MATCH(
-        t_id INTEGER REFERENCES TEAM(t_id) ON DELETE CASCADE,
+        m_id SERIAL PRIMARY KEY,
+        t_id INTEGER,
+        t_id_2 INTEGER,
         br_id INTEGER,
-        result INTEGER,
+        m_type SMALLINT,
+        result SMALLINT,
+        t_1_score SMALLINT,
+        t_2_score SMALLINT,
+        FOREIGN KEY (t_id)  REFERENCES TEAM(t_id) ON DELETE CASCADE,
+        FOREIGN KEY(t_id_2) REFERENCES TEAM(t_id) ON DELETE CASCADE,
         FOREIGN KEY(br_id) REFERENCES BRACKET(br_id) ON DELETE CASCADE
         )"""
         cursor.execute(query)
