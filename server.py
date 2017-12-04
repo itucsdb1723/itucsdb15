@@ -200,27 +200,27 @@ def tournament_profile(trname):
         query = """ SELECT * FROM TOURNAMENT WHERE tr_name=%s"""
         cursor.execute(query,[trname])
         tournament_info = cursor.fetchall()[0]
-        query2 = """SELECT  teamScores.br_stage, TEAM.t_name as teamName , SUM(teamScores.team_score) as teamScore, SUM(teamScores.team_lose) as teamLose
-                    FROM
-                    (SELECT  t_id as team_ids , SUM(t_1_score) as team_win, SUM(t_2_score) as team_lose,br_stage FROM MATCH LEFT JOIN BRACKET WHERE MATCH.br_id IN (SELECT  br_id FROM BRACKET WHERE BRACKET.tr_id = %s )  AND BRACKET.br_type = '0'
-                     UNION  ALL
-                     SELECT  t_id_2 as team_ids,SUM(t_2_score) as team_score,SUM(t_1_score) as team_lose,br_stage FROM MATCH LEFT JOIN BRACKET WHERE MATCH.br_id IN (SELECT  br_id FROM BRACKET WHERE BRACKET.tr_id = %s )  AND BRACKET.br_type = '0'
-                     ) as teamScores LEFT JOIN TEAM WHERE teamScores.team_ids = TEAM.t_id GROUP BY teamName ORDER BY teamLose ASC,teamScore DESC ,teamScores.br_stage ASC"""
-        cursor.execute(query2,[tournament_info[0])
+        query2 =""" SELECT TEAM.t_name,SUM(team_win) as teamWin ,SUM(team_lose) as teamLose,br_stage FROM  (
+                    SELECT  t_id as team_ids , SUM(t_1_score) as team_win, SUM(t_2_score) as team_lose,br_stage FROM MATCH LEFT JOIN BRACKET ON MATCH.br_id = BRACKET.br_id WHERE MATCH.br_id  IN (SELECT  br_id FROM BRACKET WHERE BRACKET.tr_id = %s )  AND BRACKET.br_type = '0' GROUP BY team_ids,br_stage
+                    UNION  ALL
+                    SELECT  t_id_2 as team_ids , SUM(t_2_score) as team_win, SUM(t_1_score) as team_lose,br_stage FROM MATCH LEFT JOIN BRACKET ON MATCH.br_id = BRACKET.br_id WHERE MATCH.br_id  IN (SELECT  br_id FROM BRACKET WHERE BRACKET.tr_id = %s )  AND BRACKET.br_type = '0' GROUP BY team_ids,br_stage
+                    ) AS teamScores LEFT JOIN TEAM ON teamScores.team_ids = TEAM.t_id GROUP BY TEAM.t_name,br_stage ORDER BY  teamLose ASC ,teamWin DESC,br_stage ASC
+                """
+        cursor.execute(query2,[tournament_info[0],tournament_info[0]])
         groupMatches = cursor.fetchall()
 
-        query3 ="""SELECT t_id,t_id_2,m_type,result,t_1_score,t_2_score,br_stage,br_id FROM MATCH LEFT JOIN BRACKET WHERE MATCH.br_id IN (SELECT  br_id FROM BRACKET WHERE BRACKET.tr_id = %s )  AND BRACKET.br_type = 1 ORDER BY br_id,br_stage ASC"""
+        query3 ="""SELECT t_id,t_id_2,m_type,result,t_1_score,t_2_score,br_stage,BRACKET.br_id FROM MATCH LEFT JOIN BRACKET ON MATCH.br_id = BRACKET.br_id WHERE MATCH.br_id IN (SELECT  br_id FROM BRACKET WHERE BRACKET.tr_id = %s )  AND BRACKET.br_type = '1' ORDER BY br_id,br_stage ASC"""
         cursor.execute(query3,[tournament_info[0]])
         playoffMatches = cursor.fetchall()
         groupMatchInfo = []
         if len(groupMatches) > 0:
             render_groups = 1
-            curStage = groupMatches[0][0]
-            for x in groupMatches:
-                if curStage == groupMatches[x][0]:
-                    groupMatchInfo[curStage].append(groupMatches[x])
+            curStage = groupMatches[0][3]
+            for x in range(len(groupMatches)):
+                if curStage == groupMatches[x][3]:
+                    #groupMatchInfo.append(curStage,groupMatches[x])
                 else:
-                    curStage = groupMatches[x][0]
+                    curStage = groupMatches[x][3]
         else:
             render_groups = 0
         info = []
@@ -281,13 +281,16 @@ def tournaments_page():
 def sqltest():
     with dbapi2.connect(app.config['dsn']) as connection:
         cursor = connection.cursor()
-        query = """ SELECT *
-                    FROM RESULT LEFT JOIN PLAYER ON PLAYER.p_id=RESULT.p_id
-                    WHERE RESULT.t_id=%s
+        query = """ SELECT * FROM
+                    (SELECT  t_id as team_ids , SUM(t_1_score) as team_win, SUM(t_2_score) as team_lose, br_stage FROM MATCH LEFT JOIN BRACKET ON MATCH.br_id = BRACKET.br_id WHERE MATCH.br_id  IN (SELECT  br_id FROM BRACKET WHERE BRACKET.tr_id = '1' )  AND BRACKET.br_type = '0' GROUP BY team_ids,br_stage
+                    UNION  ALL
+                    SELECT  t_id_2 as team_ids , SUM(t_2_score) as team_win, SUM(t_1_score) as team_lose,br_stage FROM MATCH LEFT JOIN BRACKET ON MATCH.br_id = BRACKET.br_id WHERE MATCH.br_id  IN (SELECT  br_id FROM BRACKET WHERE BRACKET.tr_id = '1' )  AND BRACKET.br_type = '0' GROUP BY team_ids,br_stage
+                    )as selection ORDER BY br_stage ASC
                 """
         cursor.execute(query,[6])
         result = cursor.fetchall()
         connection.commit()
+
     return jsonify(result)
 
 @app.route('/initdb')
@@ -404,36 +407,7 @@ def initialize_database():
         cursor.execute(query)
 
 
-        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,result,t_1_score,t_2_score)
-        VALUES ((SELECT t_id FROM TEAM WHERE t_name LIKE '%Vici%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Immortals%'),(SELECT br_id FROM BRACKET WHERE br_name = 'GROUP 1'),3,1,0,2)"""
-        cursor.execute(query)
-        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,result,t_1_score,t_2_score)
-        VALUES ((SELECT t_id FROM TEAM WHERE t_name LIKE '%Liquid%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Mineski%'),(SELECT br_id FROM BRACKET WHERE br_name = 'GROUP 1'),3,0,2,0)"""
-        cursor.execute(query)
-        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,result,t_1_score,t_2_score)
-        VALUES ((SELECT t_id FROM TEAM WHERE t_name LIKE '%Immortals%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Liquid%'),(SELECT br_id FROM BRACKET WHERE br_name = 'GROUP 1'),3,1,0,2)"""
-        cursor.execute(query)
-        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,result,t_1_score,t_2_score)
-        VALUES ((SELECT t_id FROM TEAM WHERE t_name LIKE '%Vici%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Mineski%'),(SELECT br_id FROM BRACKET WHERE br_name = 'GROUP 1'),3,1,0,2)"""
-        cursor.execute(query)
-        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,result,t_1_score,t_2_score)
-        VALUES ((SELECT t_id FROM TEAM WHERE t_name LIKE '%Immortals%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Mineski%'),(SELECT br_id FROM BRACKET WHERE br_name = 'GROUP 1'),3,1,0,2)"""
-        cursor.execute(query)
-        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,result,t_1_score,t_2_score)
-        VALUES ((SELECT t_id FROM TEAM WHERE t_name LIKE '%Newbee%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%complexity%'),(SELECT br_id FROM BRACKET WHERE br_name = 'GROUP 2'),3,1,0,2)"""
-        cursor.execute(query)
-        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,result,t_1_score,t_2_score)
-        VALUES ((SELECT t_id FROM TEAM WHERE t_name LIKE '%Secret%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Vincere%'),(SELECT br_id FROM BRACKET WHERE br_name = 'GROUP 2'),3,1,1,2)"""
-        cursor.execute(query)
-        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,result,t_1_score,t_2_score)
-        VALUES ((SELECT t_id FROM TEAM WHERE t_name LIKE '%compLexity%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Vincere%'),(SELECT br_id FROM BRACKET WHERE br_name = 'GROUP 2'),3,0,2,1)"""
-        cursor.execute(query)
-        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,result,t_1_score,t_2_score)
-        VALUES ((SELECT t_id FROM TEAM WHERE t_name LIKE '%Newbee%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Secret%'),(SELECT br_id FROM BRACKET WHERE br_name = 'GROUP 2'),3,1,0,2)"""
-        cursor.execute(query)
-        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,result,t_1_score,t_2_score)
-        VALUES ((SELECT t_id FROM TEAM WHERE t_name LIKE '%Vincere%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Secret%'),(SELECT br_id FROM BRACKET WHERE br_name = 'GROUP 2'),3,1,0,2)"""
-        cursor.execute(query)
+
 
         query = """INSERT INTO TEAM (t_name,t_tag,t_region,t_created)
         VALUES ('Evil Geniuses','EG',1,'2011-10-24')"""
@@ -466,7 +440,38 @@ def initialize_database():
         VALUES ('LGD Gaming','VG',4,'2009-01-01')"""
         cursor.execute(query)
         query = """INSERT INTO TEAM (t_name,t_tag,t_region,t_created)
-        VALUES ('LGD Natus Vincere','NAVI',2,'2010-10-22')"""
+        VALUES ('Natus Vincere','NAVI',2,'2010-10-22')"""
+        cursor.execute(query)
+
+        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,result,t_1_score,t_2_score)
+        VALUES ((SELECT t_id FROM TEAM WHERE t_name LIKE '%Vici%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Immortals%'),(SELECT br_id FROM BRACKET WHERE br_name = 'GROUP 1'),3,1,0,2)"""
+        cursor.execute(query)
+        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,result,t_1_score,t_2_score)
+        VALUES ((SELECT t_id FROM TEAM WHERE t_name LIKE '%Liquid%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Mineski%'),(SELECT br_id FROM BRACKET WHERE br_name = 'GROUP 1'),3,0,2,0)"""
+        cursor.execute(query)
+        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,result,t_1_score,t_2_score)
+        VALUES ((SELECT t_id FROM TEAM WHERE t_name LIKE '%Immortals%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Liquid%'),(SELECT br_id FROM BRACKET WHERE br_name = 'GROUP 1'),3,1,0,2)"""
+        cursor.execute(query)
+        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,result,t_1_score,t_2_score)
+        VALUES ((SELECT t_id FROM TEAM WHERE t_name LIKE '%Vici%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Mineski%'),(SELECT br_id FROM BRACKET WHERE br_name = 'GROUP 1'),3,1,0,2)"""
+        cursor.execute(query)
+        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,result,t_1_score,t_2_score)
+        VALUES ((SELECT t_id FROM TEAM WHERE t_name LIKE '%Immortals%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Mineski%'),(SELECT br_id FROM BRACKET WHERE br_name = 'GROUP 1'),3,1,0,2)"""
+        cursor.execute(query)
+        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,result,t_1_score,t_2_score)
+        VALUES ((SELECT t_id FROM TEAM WHERE t_name LIKE '%Newbee%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%compLexity%'),(SELECT br_id FROM BRACKET WHERE br_name = 'GROUP 2'),3,1,0,2)"""
+        cursor.execute(query)
+        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,result,t_1_score,t_2_score)
+        VALUES ((SELECT t_id FROM TEAM WHERE t_name LIKE '%Secret%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Vincere%'),(SELECT br_id FROM BRACKET WHERE br_name = 'GROUP 2'),3,1,1,2)"""
+        cursor.execute(query)
+        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,result,t_1_score,t_2_score)
+        VALUES ((SELECT t_id FROM TEAM WHERE t_name LIKE '%compLexity%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Vincere%'),(SELECT br_id FROM BRACKET WHERE br_name = 'GROUP 2'),3,0,2,1)"""
+        cursor.execute(query)
+        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,result,t_1_score,t_2_score)
+        VALUES ((SELECT t_id FROM TEAM WHERE t_name LIKE '%Newbee%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Secret%'),(SELECT br_id FROM BRACKET WHERE br_name = 'GROUP 2'),3,1,0,2)"""
+        cursor.execute(query)
+        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,result,t_1_score,t_2_score)
+        VALUES ((SELECT t_id FROM TEAM WHERE t_name LIKE '%Vincere%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Secret%'),(SELECT br_id FROM BRACKET WHERE br_name = 'GROUP 2'),3,1,0,2)"""
         cursor.execute(query)
 
         query = """INSERT INTO PLAYER (p_nick,p_name,p_surname,p_country,p_birth,p_mmr,t_id)
