@@ -436,13 +436,15 @@ def initialize_database():
         )"""
 
         cursor.execute(query)
-        #DO WE REALLY NEED THIS?
-        #query = """ CREATE TABLE COMPETITOR(
-        #br_id INTEGER,
-        #t_id INTEGER,
-        #FOREIGN KEY(br_id) REFERENCES BRACKET(br_id) ON DELETE CASCADE,
-        #FOREIGN KEY(t_id) REFERENCES TEAM(t_id) ON DELETE CASCADE
-        #)"""
+
+        query = """ CREATE TABLE COMPETITOR(
+        tr_id INTEGER,
+        t_id INTEGER,
+        qualifier_id INTEGER,
+        FOREIGN KEY(tr_id) REFERENCES TOURNAMENT(tr_id) ON DELETE CASCADE,
+        FOREIGN KEY(t_id) REFERENCES TEAM(t_id) ON DELETE CASCADE,
+        FOREIGN KEY(qualifier_id) REFERENCES TOURNAMENT(tr_id) ON DELETE CASCADE
+        )"""
 
         #cursor.execute(query)
 
