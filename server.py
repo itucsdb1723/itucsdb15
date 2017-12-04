@@ -289,8 +289,6 @@ def tournament_profile(trname):
             cursor.execute(query4,[tournament_info[4]])
             parentTournamentName = cursor.fetchall()[0]
             info.append(('Parent Tournament',parentTournamentName))
-        else:
-            info.append(('Parent Tournament','None'))
 
         groupTitles= ['Team','Win-Lose']
         groupColArray = ['3','1']
@@ -300,7 +298,7 @@ def tournament_profile(trname):
             render_playoffs = 1
 
         return render_template('header.html', title="Dotabase", route="tournaments") + \
-               render_template('profile.html', name=tournament_info[1], info=info, )  + \
+               render_template('tournamentprofile.html', name=tournament_info[1], info=info, )  + \
                render_template('groups.html', title="All Tournaments", route="tournaments", items=groupMatches, render=render_groups, titles=groupTitles) + \
                render_template('playoffs.html', title="All Tournaments", route="tournaments", items=playoffMatches, render=render_playoffs) + \
                render_template('footer.html')
