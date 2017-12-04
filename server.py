@@ -48,7 +48,7 @@ def login():
             return abort(401)
     else:
         return Response(
-               render_template('header.html', title="Dotabase", route="player") + \
+               render_template('header.html', title="Admin Login") + \
                render_template('loginform.html') + \
                render_template('footer.html')
                )
