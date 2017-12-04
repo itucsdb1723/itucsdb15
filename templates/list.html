@@ -1,11 +1,13 @@
-<div class="container">
+<div class="container mb-3">
 
     <div class="display-4 my-4">{{ title }}</div>
-
-    <div class="list-group">
+    <ul class="list-group">
       {% for item in items %}
-      <a href="{{ route }}/{{ item[index] }}" class="list-group-item list-group-item-action">{{ item[index] }}</a>
+      <a href="{{ route }}/{{ item[0] }}" class="list-group-item d-flex justify-content-between align-items-center list-group-item-action">
+        {{ loop.index }} - {{ item[0] }}
+        <span class="badge badge-{{ color[loop.index0] if color is defined and color|length>loop.index0 else 'primary' }}">{{ item[1] if item[1]!=None else 0 }} {{ badge }}</span>
+      </a>
       {% endfor %}
-    </div>
+    </ul>
 
   </div>
