@@ -51,12 +51,6 @@
     </div>
   </div>
   <div class="form-group row">
-    <label for="inputTeamName" class="col-sm-2 col-form-label-lg">Team Name</label>
-    <div class="col-sm-10">
-      <input type="hidden"  class="form-control form-control-lg" name=teamname id="inputTeamName" placeholder="TeamName">
-    </div>
-  </div>
-  <div class="form-group row">
     <div class="col-sm-12 my-5">
       <button type="submit" class="btn btn-dark btn-lg btn-block">Add</button>
     </div>
@@ -65,17 +59,3 @@
 </form>
 
 </div>
-
-
-        query = """CREATE TABLE PLAYER (
-        p_id SERIAL PRIMARY KEY,
-        p_accountid INTEGER UNIQUE,
-        p_nick VARCHAR(20) NOT NULL UNIQUE,
-        p_name VARCHAR(60),
-        p_surname VARCHAR(60),
-        p_country VARCHAR(2),
-        p_birth DATE,
-        t_id INTEGER,
-        p_mmr INTEGER,
-        FOREIGN KEY(t_id) REFERENCES TEAM(t_id) ON DELETE CASCADE
-        )"""

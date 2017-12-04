@@ -95,12 +95,12 @@ def add_player():
         birth_date = request.form['birth_date']
         teamid = request.form['teamid']
         mmr = request.form['mmr']
-        query = """INSERT INTO PLAYER (p_accountid,p_nick,p_name,p_surname,p_country,p_birth,p_mmr,t_id,t_name)
-        VALUES ('{}','{}','{}','{}','{}','{}','{}','{}',(SELECT t_name FROM TEAM WHERE t_id='{}'))""".format(account_id,nick,name,surname,country,birth_date,mmr,teamid,teamid)
-        print(query)
+        query = """INSERT INTO PLAYER (p_accountid,p_nick,p_name,p_surname,p_country,p_birth,p_mmr,t_id)
+        VALUES ('{}','{}','{}','{}','{}','{}','{}','{}')""".format(account_id,nick,name,surname,country,birth_date,mmr,teamid)
         with dbapi2.connect(app.config['dsn']) as connection:
             cursor = connection.cursor()
             cursor.execute(query)
+            return redirect(url_for('admin'))
     else:
         return Response(
                render_template('header.html', title="Admin Login") + \
