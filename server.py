@@ -3,6 +3,7 @@ import os
 import json
 import re
 import psycopg2 as dbapi2
+from datetime import datetime
 from datetime import date
 
 from flask import Flask, jsonify
@@ -114,12 +115,12 @@ def player_profile(nick):
 def players_page():
     with dbapi2.connect(app.config['dsn']) as connection:
         cursor = connection.cursor()
-        query = """ SELECT * FROM PLAYER """
+        query = """ SELECT PLAYER.p_nick,dpc FROM (SELECT SUM(dpc_points) as dpc,p_id FROM RESULT GROUP BY p_id ORDER BY dpc DESC) as RESULT RIGHT JOIN PLAYER ON RESULT.p_id = PLAYER.p_id"""
         cursor.execute(query)
         players = cursor.fetchall()
         connection.commit()
     return render_template('header.html', title="Dotabase", route="player") + \
-           render_template('list.html', title="All Players", route="player", items=players, index =2) + \
+           render_template('list.html', title="All Players", route="player", items=players, badge="DPC Points") + \
            render_template('footer.html')
 
 @app.route('/team/<tname>')
@@ -137,6 +138,7 @@ def team_profile(tname):
         resultList = cursor.fetchall()
         connection.commit()
         info = []
+
         if team_info[1]!=None:
             info.append(('Team Name',team_info[1]))
         if team_info[2]!=None:
@@ -159,12 +161,36 @@ def team_profile(tname):
 def teams_page():
     with dbapi2.connect(app.config['dsn']) as connection:
         cursor = connection.cursor()
-        query = """ SELECT * FROM TEAM """
+        query = """ SELECT t_name,dpc_points
+                    FROM(
+                        SELECT t_id, sum(dpc_points) as dpc_points
+                        FROM (
+                            SELECT ROW_NUMBER() OVER (PARTITION BY t_id ORDER BY dpc_points DESC) AS rowNumber, result.*
+                            FROM (
+                                SELECT p_id, max(t_id) as t_id, SUM(dpc_points) AS dpc_points
+                                FROM RESULT
+                                GROUP BY p_id
+                                ) AS result
+
+                            ) AS RESULTS
+                        WHERE results.rowNumber<=3
+                        GROUP BY t_id
+                        ) AS POINTS
+                    RIGHT JOIN TEAM
+                    ON POINTS.t_id = TEAM.t_id
+                    ORDER BY (dpc_points IS NULL),dpc_points DESC
+                """
         cursor.execute(query)
         teams = cursor.fetchall()
         connection.commit()
+    colors = []
+    for team in teams[:8]:
+        if team[1]!=None:
+            colors.append("success")
+        else:
+            colors.append("primary")
     return render_template('header.html', title="Dotabase", route="team") + \
-           render_template('list.html', title="All Teams", route="team", items=teams, index=1) + \
+           render_template('list.html', title="All Teams", route="team", items=teams, color=colors, badge="DPC Points") + \
            render_template('footer.html')
 
 @app.route('/tournaments/<trname>')
@@ -236,12 +262,19 @@ def tournament_profile(trname):
 def tournaments_page():
     with dbapi2.connect(app.config['dsn']) as connection:
         cursor = connection.cursor()
-        query = """ SELECT * FROM TOURNAMENT """
+        query = """ SELECT tr_name,tr_date FROM TOURNAMENT ORDER BY tr_date DESC """
         cursor.execute(query)
         tournaments = cursor.fetchall()
         connection.commit()
+    colors = []
+    today = date.today()
+    for tournament in tournaments:
+        if tournament[1]>today:
+            colors.append("primary")
+        if tournament[1]<=today:
+            colors.append("danger")
     return render_template('header.html', title="Dotabase", route="tournaments") + \
-           render_template('list.html', title="All Tournaments", route="tournaments", items=tournaments, index=1) + \
+           render_template('list.html', title="All Tournaments", route="tournaments", items=tournaments, color=colors) + \
            render_template('footer.html')
 
 @app.route('/sqltest')
