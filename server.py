@@ -82,7 +82,31 @@ def get_elephantsql_dsn(vcap_services):
 @app.route('/admin')
 @login_required
 def admin():
-    return Response("Hello World!")
+    return Response("<a href = /add_player>Add a Player</a>")
+
+@app.route("/add_player", methods=["GET", "POST"])
+def add_player():
+    if request.method == 'POST':
+        account_id = request.form['account_id']
+        nick = request.form['nick']
+        name = request.form['name']
+        surname = request.form['surname']
+        country = request.form['country']
+        birth_date = request.form['birth_date']
+        teamid = request.form['teamid']
+        mmr = request.form['mmr']
+        query = """INSERT INTO PLAYER (p_accountid,p_nick,p_name,p_surname,p_country,p_birth,p_mmr,t_id,t_name)
+        VALUES ('{}','{}','{}','{}','{}','{}','{}','{}',(SELECT t_name FROM TEAM WHERE t_id='{}'))""".format(account_id,nick,name,surname,country,birth_date,mmr,teamid,teamid)
+        print(query)
+        with dbapi2.connect(app.config['dsn']) as connection:
+            cursor = connection.cursor()
+            cursor.execute(query)
+    else:
+        return Response(
+               render_template('header.html', title="Admin Login") + \
+               render_template('playerform.html') + \
+               render_template('footer.html')
+               )
 
 @app.route('/home')
 @app.route('/')
