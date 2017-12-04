@@ -174,9 +174,27 @@ def tournament_profile(trname):
         query = """ SELECT * FROM TOURNAMENT WHERE tr_name=%s"""
         cursor.execute(query,[trname])
         tournament_info = cursor.fetchall()[0]
-        query2 = """SELECT t_id,t_id_2,MATCH.br_id,m_type,result,t_1_score,t_2_score,br_type FROM MATCH LEFT JOIN BRACKET WHERE MATCH.br_id IN (SELECT  br_id FROM BRACKET WHERE BRACKET.tr_id = %s ) ORDER BY br_id,br_type"""
+        query2 = """SELECT t_id,t_id_2,m_type,result,t_1_score,t_2_score,br_stage,br_id FROM MATCH LEFT JOIN BRACKET WHERE MATCH.br_id IN (SELECT  br_id FROM BRACKET WHERE BRACKET.tr_id = %s )  AND BRACKET.br_type = 0 ORDER BY br_id,br_stage ASC"""
         cursor.execute(query,[tournament_info[0]])
-        bracketMatches = cursor.fetchall()
+        groupMatches = cursor.fetchall()
+        """SELECT t_id,t_id_2,m_type,result,t_1_score,t_2_score,br_stage,br_id FROM MATCH LEFT JOIN BRACKET WHERE MATCH.br_id IN (SELECT  br_id FROM BRACKET WHERE BRACKET.tr_id = %s )  AND BRACKET.br_type = 1 ORDER BY br_id,br_stage ASC"""
+        cursor.execute(query,[tournament_info[0]])
+        playoffMatches = cursor.fetchall()
+        if len(groupMatches) > 0:
+            render_groups = 1
+        else:
+            render_groups = 0
+
+        if len(playoffMatches) > 0:
+            render_playoffs = 0
+        else:
+            render_playoffs = 1
+
+        return render_template('header.html', title="Dotabase", route="tournaments") + \
+               render_template('groups.html', title="All Tournaments", route="tournaments", items=groupMatches, render=render_groups) + \
+               render_template('playoffs.html', title="All Tournaments", route="tournaments", items=playoffMatches, render=render_playoffs) + \
+               render_template('footer.html')
+
         #TO DO: FIND BRACKET TYPES -> IF EXIST DRAW & DO PROPER THINGS FOR EACH BRACKET TYPE.
         #GROUPS -> DRAW TABLE ACCORDING TO WIN-LOSS NUMBERS
         #PLAYOFFS ->DRAW BRACKET GRAPH.(LAST 16, SEMI, FINAL ETC).
@@ -263,11 +281,13 @@ def initialize_database():
         FOREIGN KEY(parent_tr_id) REFERENCES TOURNAMENT(tr_id) ON DELETE CASCADE
         )"""
         cursor.execute(query)
-        #If br_tree = 0 , It means its a group.1 means final ,2 means semi and  so on.
+        #br_type = 0 group, 1 playoff
+        #If br_stage = 0  means final ,1 means semi and  so on.
         query = """ CREATE TABLE BRACKET(
         br_id SERIAL PRIMARY KEY,
         team_count INTEGER,
-        br_tree SMALLINT,
+        br_type BOOLEAN,
+        br_stage SMALLINT,
         tr_id INTEGER,
         FOREIGN KEY(tr_id) REFERENCES TOURNAMENT(tr_id) ON DELETE CASCADE
         )"""
