@@ -256,24 +256,14 @@ def tournament_profile(trname):
         query = """ SELECT * FROM TOURNAMENT WHERE tr_name=%s"""
         cursor.execute(query,[trname])
         tournament_info = cursor.fetchall()[0]
-<<<<<<< HEAD
         query2 =""" SELECT TEAM.t_name,SUM(team_win) as teamWin ,SUM(team_lose) as teamLose,br_stage FROM  (
                     SELECT  t_id as team_ids , SUM(t_1_score) as team_win, SUM(t_2_score) as team_lose,br_stage FROM MATCH LEFT JOIN BRACKET ON MATCH.br_id = BRACKET.br_id WHERE MATCH.br_id  IN (SELECT  br_id FROM BRACKET WHERE BRACKET.tr_id = %s )  AND BRACKET.br_type = '0' GROUP BY team_ids,br_stage
                     UNION  ALL
                     SELECT  t_id_2 as team_ids , SUM(t_2_score) as team_win, SUM(t_1_score) as team_lose,br_stage FROM MATCH LEFT JOIN BRACKET ON MATCH.br_id = BRACKET.br_id WHERE MATCH.br_id  IN (SELECT  br_id FROM BRACKET WHERE BRACKET.tr_id = %s )  AND BRACKET.br_type = '0' GROUP BY team_ids,br_stage
                     ) AS teamScores LEFT JOIN TEAM ON teamScores.team_ids = TEAM.t_id GROUP BY TEAM.t_name,br_stage ORDER BY  teamLose ASC ,teamWin DESC,br_stage ASC
                 """
-=======
-        query2 = """SELECT  teamScores.br_stage, TEAM.t_name as teamName , SUM(teamScores.team_score) as teamScore, SUM(teamScores.team_lose) as teamLose
-                    FROM
-                    (SELECT  t_id as team_ids , SUM(t_1_score) as team_win, SUM(t_2_score) as team_lose,br_stage FROM MATCH LEFT JOIN BRACKET WHERE MATCH.br_id IN (SELECT  br_id FROM BRACKET WHERE BRACKET.tr_id = %s )  AND BRACKET.br_type = '0'
-                     UNION  ALL
-                     SELECT  t_id_2 as team_ids,SUM(t_2_score) as team_score,SUM(t_1_score) as team_lose,br_stage FROM MATCH LEFT JOIN BRACKET WHERE MATCH.br_id IN (SELECT  br_id FROM BRACKET WHERE BRACKET.tr_id = %s )  AND BRACKET.br_type = '0'
-                     ) as teamScores LEFT JOIN TEAM WHERE teamScores.team_ids = TEAM.t_id GROUP BY teamName ORDER BY teamLose ASC,teamScore DESC ,teamScores.br_stage ASC"""
->>>>>>> fb02c91fa462e0674ca1c3c342a047d9b9277282
         cursor.execute(query2,[tournament_info[0],tournament_info[0]])
         groupMatches = cursor.fetchall()
-
         query3 ="""SELECT t_id,t_id_2,m_type,result,t_1_score,t_2_score,br_stage,BRACKET.br_id FROM MATCH LEFT JOIN BRACKET ON MATCH.br_id = BRACKET.br_id WHERE MATCH.br_id IN (SELECT  br_id FROM BRACKET WHERE BRACKET.tr_id = %s )  AND BRACKET.br_type = '1' ORDER BY br_id,br_stage ASC"""
         cursor.execute(query3,[tournament_info[0]])
         playoffMatches = cursor.fetchall()
@@ -283,14 +273,13 @@ def tournament_profile(trname):
             curStage = groupMatches[0][3]
             for x in range(len(groupMatches)):
                 if curStage == groupMatches[x][3]:
-                    #groupMatchInfo.append(curStage,groupMatches[x])
+                    groupMatchInfo.append(groupMatches[x])
                 else:
                     curStage = groupMatches[x][3]
         else:
             render_groups = 0
         info = []
-        if tournament_info[1]!=None:
-            info.append(('Tournament Name',tournament_info[1]))
+
         if tournament_info[2]!=None:
             info.append(('Start Date',tournament_info[2]))
         if tournament_info[3]!=None:
@@ -312,7 +301,7 @@ def tournament_profile(trname):
 
         return render_template('header.html', title="Dotabase", route="tournaments") + \
                render_template('profile.html', name=tournament_info[1], info=info, )  + \
-               render_template('groups.html', title="All Tournaments", route="tournaments", items=groupMatchesInfo, render=render_groups, titles=groupTitles) + \
+               render_template('groups.html', title="All Tournaments", route="tournaments", items=groupMatches, render=render_groups, titles=groupTitles) + \
                render_template('playoffs.html', title="All Tournaments", route="tournaments", items=playoffMatches, render=render_playoffs) + \
                render_template('footer.html')
 
