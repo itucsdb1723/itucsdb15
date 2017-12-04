@@ -1,3 +1,20 @@
 {% if render %}
+<div class="container">
+    <div class="row">
+      {% for itemList in items %}
+      <div class="col-xs-6">
+        <div class="row">
+          <div class="col-3 text-center "><strong>Team Name</strong></div>
+          <div class="col-1 text-center "><strong>Score</strong></div>
 
+        {% for itemArray in  itemList%}
+        <div class="row">
+          <div class="col-3 text-center ">{{item[1]}}</div>
+          <div class="col-1 text-center ">{{item[2]}} - {{item[3]}}</div>
+        </div>
+        {% endfor %}
+      </div>
+
+    </div>
+ </div>
 {% endif %}
