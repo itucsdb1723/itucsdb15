@@ -446,7 +446,7 @@ def initialize_database():
         FOREIGN KEY(qualifier_id) REFERENCES TOURNAMENT(tr_id) ON DELETE CASCADE
         )"""
 
-        #cursor.execute(query)
+        cursor.execute(query)
 
         query = """ CREATE TABLE MATCH(
         m_id SERIAL PRIMARY KEY,
