@@ -129,7 +129,7 @@ def player_profile(nick):
         query3 = """ SELECT SUM(dpc_points),COUNT(*),COUNT(CASE WHEN tr_date<%s THEN 1 END) FROM RESULT LEFT JOIN TOURNAMENT ON RESULT.tr_id=TOURNAMENT.tr_id WHERE p_id=%s """
         cursor.execute(query3,[today,player_info[0]])
         results = cursor.fetchall()[0]
-        query4 = """ SELECT *
+        query4 = """SELECT *
                     FROM(
                         SELECT ROW_NUMBER() OVER() as team_rank, data.*
                         FROM (
@@ -366,7 +366,7 @@ def sqltest():
         cursor.execute(query,[6])
         result = cursor.fetchall()
         connection.commit()
-
+    #return render_template('error.html', title="Error Page", error_title="YA-HA-HA", error_body="YOU FOUND ME")
     return jsonify(result)
 
 @app.route('/initdb')
