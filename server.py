@@ -264,7 +264,7 @@ def tournament_profile(trname):
                      UNION  ALL
                      SELECT  t_id_2 as team_ids,SUM(t_2_score) as team_score,SUM(t_1_score) as team_lose,br_stage FROM MATCH LEFT JOIN BRACKET WHERE MATCH.br_id IN (SELECT  br_id FROM BRACKET WHERE BRACKET.tr_id = %s )  AND BRACKET.br_type = '0'
                      ) as teamScores LEFT JOIN TEAM WHERE teamScores.team_ids = TEAM.t_id GROUP BY teamName ORDER BY teamLose ASC,teamScore DESC ,teamScores.br_stage ASC"""
-        cursor.execute(query2,[tournament_info[0])
+        cursor.execute(query2,[tournament_info[0],tournament_info[0]])
         groupMatches = cursor.fetchall()
 
         query3 ="""SELECT t_id,t_id_2,m_type,result,t_1_score,t_2_score,br_stage,br_id FROM MATCH LEFT JOIN BRACKET WHERE MATCH.br_id IN (SELECT  br_id FROM BRACKET WHERE BRACKET.tr_id = %s )  AND BRACKET.br_type = 1 ORDER BY br_id,br_stage ASC"""
@@ -727,4 +727,5 @@ if __name__ == '__main__':
     else:
         app.config['dsn'] = """user='vagrant' password='vagrant'
                                host='localhost' port=5432 dbname='itucsdb'"""
+    app.config["SECRET_KEY"] = 'super_secret_key'                               
     app.run(host='0.0.0.0', port=port, debug=debug)
