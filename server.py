@@ -323,8 +323,16 @@ def tournament_profile(trname):
 
         return render_template('header.html', title="Dotabase", route="tournaments") + \
                render_template('tournamentprofile.html', name=tournament_info[1], info=info, )  + \
-               render_template('groups.html', title="All Tournaments", route="tournaments", items=groupMatches, render=render_groups, titles=groupTitles) + \
-               render_template('playoffs.html', title="All Tournaments", route="tournaments", items=playoffMatches, render=render_playoffs) + \
+               render_template('teamlist.html', route="tournaments", items=groupMatches) + \
+               render_template('dividepage.html', title="Group A", left_size=4, right_size=8,
+               left=  render_template('groups.html', route="tournaments", items=groupMatches[:4], render=render_groups) ,
+               right=  render_template('groups.html', route="tournaments", items=groupMatches[:6], render=render_groups)
+               ) + \
+               render_template('dividepage.html', title="Group B", left_size=4, right_size=8,
+               left=  render_template('groups.html', route="tournaments", items=groupMatches[4:], render=render_groups) ,
+               right=  render_template('groups.html', route="tournaments", items=groupMatches[:6], render=render_groups)
+               ) + \
+               render_template('playoffs.html', route="tournaments", items=playoffMatches, render=render_playoffs) + \
                render_template('footer.html')
 
         #TO DO: FIND BRACKET TYPES -> IF EXIST DRAW & DO PROPER THINGS FOR EACH BRACKET TYPE.
