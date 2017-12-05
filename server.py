@@ -340,9 +340,12 @@ def tournament_profile(trname):
                 render_template('groups.html', route="tournaments", items=groupMatches[:6], render=render_groups)
                )
                ) + \
-               render_template('dividepage.html', title="Group B", left_size=4, right_size=8,
-               left=  render_template('groups.html', route="tournaments", items=groupMatches[4:], render=render_groups) ,
-               right=  render_template('groups.html', route="tournaments", items=groupMatches[:6], render=render_groups)
+               render_template('dividepage.html', title="Group B", sizes=(4,4,4), content=
+               (
+                render_template('groups.html', route="tournaments", items=groupMatches[:4], render=render_groups) ,
+                render_template('groups.html', route="tournaments", items=groupMatches[:4], render=render_groups) ,
+                render_template('groups.html', route="tournaments", items=groupMatches[:4], render=render_groups)
+               )
                ) + \
                render_template('playoffs.html', route="tournaments", items=playoffMatches, render=render_playoffs) + \
                render_template('footer.html')
