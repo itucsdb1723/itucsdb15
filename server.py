@@ -82,9 +82,10 @@ def get_elephantsql_dsn(vcap_services):
 @app.route('/admin')
 @login_required
 def admin():
-    return Response("<a href = /add_player>Add a Player</a>")
+    return Response("<a href = /add_player>Add a Player</a><br><a href = /add_team>Add a Team</a><br><a href = /add_tournament>Add a Tournament</a>")
 
 @app.route("/add_player", methods=["GET", "POST"])
+@login_required
 def add_player():
     if request.method == 'POST':
         account_id = request.form['account_id']
@@ -108,12 +109,60 @@ def add_player():
                render_template('footer.html')
                )
 
+@app.route("/add_team", methods=["GET", "POST"])
+@login_required
+def add_team():
+    if request.method == 'POST':
+        team_name = request.form['team_name']
+        team_tag = request.form['team_tag']
+        region = request.form['region']
+        date_created = request.form['date_created']
+
+        query = """INSERT INTO TEAM (t_name,t_tag,t_region,t_created)
+        VALUES ('{}','{}','{}','{}')""".format(team_name,team_tag,region,date_created)
+        with dbapi2.connect(app.config['dsn']) as connection:
+            cursor = connection.cursor()
+            cursor.execute(query)
+            return redirect(url_for('admin'))
+
+    else:
+        return Response(
+               render_template('header.html', title="Admin Login") + \
+               render_template('teamform.html') + \
+               render_template('footer.html')
+               )
+
+@app.route("/add_tournament", methods=["GET", "POST"])
+@login_required
+def add_tournament():
+    if request.method == 'POST':
+        tournament_name = request.form['tournament_name']
+        date_started = request.form['date_started']
+        date_ended = request.form['date_ended']
+        parent_id = request.form['parent_id']
+
+        query = """INSERT INTO TOURNAMENT (tr_name,tr_date,tr_enddate,parent_tr_id)
+        VALUES ('{}','{}','{}','{}')""".format(tournament_name,date_started,date_ended,parent_id)
+        print(query)
+        with dbapi2.connect(app.config['dsn']) as connection:
+            cursor = connection.cursor()
+            cursor.execute(query)
+            return redirect(url_for('admin'))
+
+    else:
+        return Response(
+               render_template('header.html', title="Admin Login") + \
+               render_template('tournamentform.html') + \
+               render_template('footer.html')
+               )
+
 @app.route('/home')
 @app.route('/')
 def home_page():
     return render_template('header.html', title="Dotabase", route="home") + \
            render_template('home.html') + \
            render_template('footer.html')
+
 
 @app.route('/player/<nick>')
 def player_profile(nick):
