@@ -291,6 +291,16 @@ def tournament_profile(trname):
         query3 ="""SELECT t_id,t_id_2,m_type,result,t_1_score,t_2_score,br_stage,BRACKET.br_id FROM MATCH LEFT JOIN BRACKET ON MATCH.br_id = BRACKET.br_id WHERE MATCH.br_id IN (SELECT  br_id FROM BRACKET WHERE BRACKET.tr_id = %s )  AND BRACKET.br_type = '1' ORDER BY br_id,br_stage ASC"""
         cursor.execute(query3,[tournament_info[0]])
         playoffMatches = cursor.fetchall()
+        query4= """ SELECT teamTable.teamName,TOURNAMENT.tr_name
+                        FROM(
+                                SELECT qualifier_id,TEAM.t_name as teamName
+                                 FROM PARTICIPANT LEFT JOIN TEAM ON TEAM.t_id = PARTICIPANT.t_id WHERE PARTICIPANT.tr_id = %s
+                             ) as teamTable LEFT JOIN TOURNAMENT ON TOURNAMENT.tr_id = teamTable.qualifier_id  ORDER BY (TOURNAMENT.tr_name IS NULL) DESC """
+        cursor.execute(query4,[tournament_info[0]])
+        participants = cursor.fetchall()
+
+
+
         groupMatchInfo = []
         if len(groupMatches) > 0:
             render_groups = 1
@@ -323,7 +333,7 @@ def tournament_profile(trname):
 
         return render_template('header.html', title="Dotabase", route="tournaments") + \
                render_template('tournamentprofile.html', name=tournament_info[1], info=info, )  + \
-               render_template('teamlist.html', route="tournaments", items=groupMatches) + \
+               render_template('teamlist.html', route="tournaments", items=participants) + \
                render_template('dividepage.html', title="Group A", left_size=4, right_size=8,
                left=  render_template('groups.html', route="tournaments", items=groupMatches[:4], render=render_groups) ,
                right=  render_template('groups.html', route="tournaments", items=groupMatches[:6], render=render_groups)
@@ -445,7 +455,7 @@ def initialize_database():
 
         cursor.execute(query)
 
-        query = """ CREATE TABLE COMPETITOR(
+        query = """ CREATE TABLE PARTICIPANT(
         tr_id INTEGER,
         t_id INTEGER,
         qualifier_id INTEGER,
@@ -558,6 +568,31 @@ def initialize_database():
         cursor.execute(query)
         query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,result,t_1_score,t_2_score)
         VALUES ((SELECT t_id FROM TEAM WHERE t_name LIKE '%Vincere%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Secret%'),(SELECT br_id FROM BRACKET WHERE br_name = 'GROUP 2'),3,1,0,2)"""
+        cursor.execute(query)
+
+        query = """ INSERT INTO PARTICIPANT (tr_id,t_id)
+        VALUES ((SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Invitational Season 3%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Newbee%'))"""
+        cursor.execute(query)
+        query = """ INSERT INTO PARTICIPANT (tr_id,t_id)
+        VALUES ((SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Invitational Season 3%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Liquid%'))"""
+        cursor.execute(query)
+        query = """ INSERT INTO PARTICIPANT (tr_id,t_id,qualifier_id)
+        VALUES ((SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Invitational Season 3%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Vici%'),2)"""
+        cursor.execute(query)
+        query = """ INSERT INTO PARTICIPANT (tr_id,t_id,qualifier_id)
+        VALUES ((SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Invitational Season 3%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Immortals%'),1)"""
+        cursor.execute(query)
+        query = """ INSERT INTO PARTICIPANT (tr_id,t_id,qualifier_id)
+        VALUES ((SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Invitational Season 3%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Secret%'),3)"""
+        cursor.execute(query)
+        query = """ INSERT INTO PARTICIPANT (tr_id,t_id,qualifier_id)
+        VALUES ((SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Invitational Season 3%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%compLexity%'),2)"""
+        cursor.execute(query)
+        query = """ INSERT INTO PARTICIPANT (tr_id,t_id,qualifier_id)
+        VALUES ((SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Invitational Season 3%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Mineski%'),2)"""
+        cursor.execute(query)
+        query = """ INSERT INTO PARTICIPANT (tr_id,t_id,qualifier_id)
+        VALUES ((SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Invitational Season 3%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Vincere%'),2)"""
         cursor.execute(query)
 
         query = """INSERT INTO PLAYER (p_nick,p_name,p_surname,p_country,p_birth,p_mmr,t_id)
