@@ -4,7 +4,11 @@
         <div class="col-3">
           <div class="card mb-3">
             <a class="text-dark" href="../team/{{ item[0] }}">{{item[0]}}</a>
-            <a class="text-dark" href="../team/{{ item[0] }}">{{item[1]}}</a>
+            {% if item[1] is none %}
+            Invited
+            {% else %}
+            <a class="text-dark" href="../tournaments/{{ item[1] }}">{{item[1]}}</a>
+            {% endif %}
           </div>
         </div>
         {% endfor %}
