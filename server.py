@@ -88,8 +88,6 @@ def admin():
 @login_required
 def add_player():
     if request.method == 'POST':
-        s = ""
-        v = ""
         account_id = (request.form['account_id'],"p_accountid")
         nick = (request.form['nick'],"p_nick")
         name = (request.form['name'],"p_name")
@@ -98,10 +96,11 @@ def add_player():
         birth_date = (request.form['birth_date'],"p_birth")
         teamid = (request.form['teamid'],"t_id")
         mmr = (request.form['mmr'],"p_mmr")
+        
+        s = ""
+        v = ""
         for var in (account_id,nick,name,surname,country,birth_date,teamid,mmr):
-            if(var[0] == ""):
-                var = None
-            else:
+            if(var[0] != ""):
                 if(s==""):
                     s = var[1]
                     v = "'"+var[0]+"'"
@@ -116,16 +115,13 @@ def add_player():
             cursor = connection.cursor()
             try:
                 cursor.execute(query)
-            except dbapi2.DataError:
+            except dbapi2.Error as e:
                 lcolor = "danger"
-                ltext = "Invalid data type"
+                ltext = e.pgerror
                 pass
-            except dbapi2.IntegrityError:
-                lcolor = "danger"
-                ltext = "Passed empty value to NON-NULL variable"
             else:
                 lcolor = "success"
-                ltext = "{} added to the dotabase".format(nick)
+                ltext = "{} added to the dotabase".format(nick[0])
                 pass
         return Response(
                render_template('header.html', title="Admin Login") + \
@@ -144,19 +140,40 @@ def add_player():
 @login_required
 def add_team():
     if request.method == 'POST':
-        team_name = request.form['team_name']
-        team_tag = request.form['team_tag']
-        region = request.form['region']
-        date_created = request.form['date_created']
+        team_name = (request.form['team_name'],"t_name")
+        team_tag = (request.form['team_tag'],"t_tag")
+        region = (request.form['region'],"t_region")
+        date_created = (request.form['date_created'],"t_created")
 
-        query = """INSERT INTO TEAM (t_name,t_tag,t_region,t_created)
-        VALUES ('{}','{}','{}','{}')""".format(team_name,team_tag,region,date_created)
+        s = ""
+        v = ""
+        for var in (team_name,team_tag,region,date_created):
+            if(var[0] != ""):
+                if(s==""):
+                    s = var[1]
+                    v = "'"+var[0]+"'"
+                else:
+                    s += "," + var[1]
+                    v += ","+"'"+var[0]+"'"
+
+        query = """INSERT INTO TEAM ({})
+        VALUES ({})""".format(s,v)
+
         with dbapi2.connect(app.config['dsn']) as connection:
             cursor = connection.cursor()
-            cursor.execute(query)
+            try:
+                cursor.execute(query)
+            except dbapi2.Error as e:
+                lcolor = "danger"
+                ltext = e.pgerror
+                pass
+            else:
+                lcolor = "success"
+                ltext = "{} added to the dotabase".format(team_name[0])
+                pass
         return Response(
                render_template('header.html', title="Admin Login") + \
-               render_template('alert.html', color="success",text="{} added to the dotabase".format(team_name)) + \
+               render_template('alert.html', color=lcolor,text=ltext) + \
                render_template('teamform.html') + \
                render_template('footer.html')
                )
@@ -171,20 +188,39 @@ def add_team():
 @login_required
 def add_tournament():
     if request.method == 'POST':
-        tournament_name = request.form['tournament_name']
-        date_started = request.form['date_started']
-        date_ended = request.form['date_ended']
-        parent_id = request.form['parent_id']
+        tournament_name = (request.form['tournament_name'],"tr_name")
+        date_started = (request.form['date_started'],"tr_date")
+        date_ended = (request.form['date_ended'],"tr_enddate")
+        parent_id = (request.form['parent_id'],"parent_tr_id")
 
-        query = """INSERT INTO TOURNAMENT (tr_name,tr_date,tr_enddate,parent_tr_id)
-        VALUES ('{}','{}','{}','{}')""".format(tournament_name,date_started,date_ended,parent_id)
-        print(query)
+        s = ""
+        v = ""
+        for var in (tournament_name,date_started,date_ended,parent_id):
+            if(var[0] != ""):
+                if(s==""):
+                    s = var[1]
+                    v = "'"+var[0]+"'"
+                else:
+                    s += "," + var[1]
+                    v += ","+"'"+var[0]+"'"
+
+        query = """INSERT INTO TOURNAMENT ({})
+        VALUES ({})""".format(s,v)
         with dbapi2.connect(app.config['dsn']) as connection:
             cursor = connection.cursor()
-            cursor.execute(query)
+            try:
+                cursor.execute(query)
+            except dbapi2.Error as e:
+                lcolor = "danger"
+                ltext = e.pgerror
+                pass
+            else:
+                lcolor = "success"
+                ltext = "{} added to the dotabase".format(tournament_name[0])
+                pass
         return Response(
                render_template('header.html', title="Admin Login") + \
-               render_template('alert.html', color="success",text="{} added to the dotabase".format(tournament_name)) + \
+               render_template('alert.html', color=lcolor,text=ltext) + \
                render_template('tournamentform.html') + \
                render_template('footer.html')
                )
