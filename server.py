@@ -236,6 +236,310 @@ def add_tournament():
                render_template('footer.html')
                )
 
+@app.route("/add_bracket", methods=["GET", "POST"])
+@login_required
+def add_bracket():
+    if request.method == 'POST':
+        team_count = (request.form['tournament_name'],"team_count")
+        br_type = (request.form['br_type'],"br_type")
+        br_stage = (request.form['br_stage'],"br_stage")
+        tr_id = (request.form['tr_id'],"tr_id")
+        br_name = (request.form['br_name'],"br_name")
+
+        s = ""
+        v = ""
+        for var in (team_count,br_type,br_stage,tr_id,br_name):
+            if(var[0] != ""):
+                if(s==""):
+                    s = var[1]
+                    v = "'"+var[0]+"'"
+                else:
+                    s += "," + var[1]
+                    v += ","+"'"+var[0]+"'"
+
+        query = """INSERT INTO BRACKET ({})
+        VALUES ({})""".format(s,v)
+        with dbapi2.connect(app.config['dsn']) as connection:
+            cursor = connection.cursor()
+            try:
+                cursor.execute(query)
+            except dbapi2.Error as e:
+                lcolor = "danger"
+                ltext = e.pgerror
+                pass
+            else:
+                lcolor = "success"
+                ltext = "{} added to the dotabase".format(br_name[0])
+                pass
+        return Response(
+               render_template('header.html', title="Admin Login") + \
+               render_template('alert.html', color=lcolor,text=ltext) + \
+               render_template('bracketform.html') + \
+               render_template('footer.html')
+               )
+
+    else:
+        return Response(
+               render_template('header.html', title="Admin Login") + \
+               render_template('bracketform.html') + \
+               render_template('footer.html')
+               )
+
+@app.route("/add_participant", methods=["GET", "POST"])
+@login_required
+def add_participant():
+    if request.method == 'POST':
+        tr_id = (request.form['tr_id'],"tr_id")
+        t_id = (request.form['t_id'],"t_id")
+        qualifier_id = (request.form['qualifier_id'],"qualifier_id")
+
+        s = ""
+        v = ""
+        for var in (tr_id,t_id,qualifier_id):
+            if(var[0] != ""):
+                if(s==""):
+                    s = var[1]
+                    v = "'"+var[0]+"'"
+                else:
+                    s += "," + var[1]
+                    v += ","+"'"+var[0]+"'"
+
+        query = """INSERT INTO PARTICIPANT ({})
+        VALUES ({})""".format(s,v)
+        with dbapi2.connect(app.config['dsn']) as connection:
+            cursor = connection.cursor()
+            try:
+                cursor.execute(query)
+            except dbapi2.Error as e:
+                lcolor = "danger"
+                ltext = e.pgerror
+                pass
+            else:
+                lcolor = "success"
+                ltext = "Participant is added to the dotabase"
+                pass
+        return Response(
+               render_template('header.html', title="Admin Login") + \
+               render_template('alert.html', color=lcolor,text=ltext) + \
+               render_template('bracketform.html') + \
+               render_template('footer.html')
+               )
+    else:
+        return Response(
+               render_template('header.html', title="Admin Login") + \
+               render_template('bracketform.html') + \
+               render_template('footer.html')
+               )
+
+@app.route("/add_match", methods=["GET", "POST"])
+@login_required
+def add_match():
+    if request.method == 'POST':
+        t_id = (request.form['t_id'],"t_id")
+        t_id_2 = (request.form['t_id_2'],"t_id_2")
+        br_id = (request.form['br_id'],"br_id")
+        m_type = (request.form['m_type'],"m_type")
+        result = (request.form['result'],"result")
+        t_1_score = (request.form['t_1_score'],"t_1_score")
+        t_2_score = (request.form['t_2_score'],"t_2_score")
+
+        s = ""
+        v = ""
+        for var in (t_id, t_id_2, br_id, m_type, result, t_1_score, t_2_score):
+            if(var[0] != ""):
+                if(s==""):
+                    s = var[1]
+                    v = "'"+var[0]+"'"
+                else:
+                    s += "," + var[1]
+                    v += ","+"'"+var[0]+"'"
+
+        query = """INSERT INTO MATCH ({})
+        VALUES ({})""".format(s,v)
+        with dbapi2.connect(app.config['dsn']) as connection:
+            cursor = connection.cursor()
+            try:
+                cursor.execute(query)
+            except dbapi2.Error as e:
+                lcolor = "danger"
+                ltext = e.pgerror
+                pass
+            else:
+                lcolor = "success"
+                ltext = "Match is added to the dotabase"
+                pass
+        return Response(
+               render_template('header.html', title="Admin Login") + \
+               render_template('alert.html', color=lcolor,text=ltext) + \
+               render_template('bracketform.html') + \
+               render_template('footer.html')
+               )
+    else:
+        return Response(
+               render_template('header.html', title="Admin Login") + \
+               render_template('bracketform.html') + \
+               render_template('footer.html')
+               )
+
+@app.route("/add_talent", methods=["GET", "POST"])
+@login_required
+def add_talent():
+    if request.method == 'POST':
+        p_id = (request.form['p_id'],"p_id")
+        tr_id = (request.form['tr_id'],"tr_id")
+        rl_id = (request.form['rl_id'],"rl_id")
+        lang = (request.form['lang'],"lang")
+
+        s = ""
+        v = ""
+        for var in (p_id, tr_id, rl_id, lang):
+            if(var[0] != ""):
+                if(s==""):
+                    s = var[1]
+                    v = "'"+var[0]+"'"
+                else:
+                    s += "," + var[1]
+                    v += ","+"'"+var[0]+"'"
+
+        query = """INSERT INTO TALENT ({})
+        VALUES ({})""".format(s,v)
+        with dbapi2.connect(app.config['dsn']) as connection:
+            cursor = connection.cursor()
+            try:
+                cursor.execute(query)
+            except dbapi2.Error as e:
+                lcolor = "danger"
+                ltext = e.pgerror
+                pass
+            else:
+                lcolor = "success"
+                ltext = "Talent is added to the dotabase"
+                pass
+        return Response(
+               render_template('header.html', title="Admin Login") + \
+               render_template('alert.html', color=lcolor,text=ltext) + \
+               render_template('bracketform.html') + \
+               render_template('footer.html')
+               )
+    else:
+        return Response(
+               render_template('header.html', title="Admin Login") + \
+               render_template('bracketform.html') + \
+               render_template('footer.html')
+               )
+
+@app.route("/add_result", methods=["GET", "POST"])
+@login_required
+def add_result():
+    if request.method == 'POST':
+        p_id = (request.form['p_id'],"p_id")
+        t_id = (request.form['t_id'],"t_id")
+        tr_id = (request.form['tr_id'],"tr_id")
+        placement = (request.form['placement'],"placement")
+        dpc_points = (request.form['dpc_points'],"dpc_points")
+        prize = (request.form['prize'],"prize")
+
+        s = ""
+        v = ""
+        for var in (p_id, t_id, tr_id, placement, dpc_points, prize):
+            if(var[0] != ""):
+                if(s==""):
+                    s = var[1]
+                    v = "'"+var[0]+"'"
+                else:
+                    s += "," + var[1]
+                    v += ","+"'"+var[0]+"'"
+
+        query = """INSERT INTO RESULT ({})
+        VALUES ({})""".format(s,v)
+        with dbapi2.connect(app.config['dsn']) as connection:
+            cursor = connection.cursor()
+            try:
+                cursor.execute(query)
+            except dbapi2.Error as e:
+                lcolor = "danger"
+                ltext = e.pgerror
+                pass
+            else:
+                lcolor = "success"
+                ltext = "Result is added to the dotabase"
+                pass
+        return Response(
+               render_template('header.html', title="Admin Login") + \
+               render_template('alert.html', color=lcolor,text=ltext) + \
+               render_template('bracketform.html') + \
+               render_template('footer.html')
+               )
+    else:
+        return Response(
+               render_template('header.html', title="Admin Login") + \
+               render_template('bracketform.html') + \
+               render_template('footer.html')
+               )        
+
+        query = """ CREATE TABLE ROSTER(
+        p_id INTEGER NOT NULL,
+        t_id INTEGER NOT NULL,
+        join_date DATE,
+        leave_date DATE,
+        position INTEGER,
+        is_captain BOOLEAN NOT NULL,
+        FOREIGN KEY(p_id) REFERENCES PLAYER(p_id) ON DELETE CASCADE,
+        FOREIGN KEY(t_id) REFERENCES TEAM(t_id) ON DELETE CASCADE
+        )"""
+
+
+@app.route("/add_roster", methods=["GET", "POST"])
+@login_required
+def add_roster():
+    if request.method == 'POST':
+        p_id = (request.form['p_id'],"p_id")
+        t_id = (request.form['t_id'],"t_id")
+        join_date = (request.form['join_date'],"join_date")
+        leave_date = (request.form['leave_date'],"leave_date")
+        position = (request.form['position'],"position")
+        is_captain = (request.form['is_captain'],"is_captain")
+
+        s = ""
+        v = ""
+        for var in (p_id, t_id, join_date, leave_date, position, is_captain):
+            if(var[0] != ""):
+                if(s==""):
+                    s = var[1]
+                    v = "'"+var[0]+"'"
+                else:
+                    s += "," + var[1]
+                    v += ","+"'"+var[0]+"'"
+
+        query = """INSERT INTO RESULT ({})
+        VALUES ({})""".format(s,v)
+        with dbapi2.connect(app.config['dsn']) as connection:
+            cursor = connection.cursor()
+            try:
+                cursor.execute(query)
+            except dbapi2.Error as e:
+                lcolor = "danger"
+                ltext = e.pgerror
+                pass
+            else:
+                lcolor = "success"
+                ltext = "Result is added to the dotabase"
+                pass
+        return Response(
+               render_template('header.html', title="Admin Login") + \
+               render_template('alert.html', color=lcolor,text=ltext) + \
+               render_template('bracketform.html') + \
+               render_template('footer.html')
+               )
+    else:
+        return Response(
+               render_template('header.html', title="Admin Login") + \
+               render_template('bracketform.html') + \
+               render_template('footer.html')
+               )
+
+        
+
 @app.route('/home')
 @app.route('/')
 def home_page():
