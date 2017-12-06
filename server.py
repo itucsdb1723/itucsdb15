@@ -118,7 +118,7 @@ def add_player():
                 cursor.execute(query)
             except dbapi2.DataError:
                 lcolor = "danger"
-                ltext = "Invalid data type"                
+                ltext = "Invalid data type"
                 pass
             except dbapi2.IntegrityError:
                 lcolor = "danger"
@@ -130,7 +130,7 @@ def add_player():
         return Response(
                render_template('header.html', title="Admin Login") + \
                render_template('alert.html', color=lcolor,text=ltext) + \
-               render_template('playerform.html') + \
+               render_template('playerform.html', countries=countries) + \
                render_template('footer.html')
                )
     else:
@@ -159,7 +159,7 @@ def add_team():
                render_template('alert.html', color="success",text="{} added to the dotabase".format(team_name)) + \
                render_template('teamform.html') + \
                render_template('footer.html')
-               )            
+               )
     else:
         return Response(
                render_template('header.html', title="Admin Login") + \
@@ -187,7 +187,7 @@ def add_tournament():
                render_template('alert.html', color="success",text="{} added to the dotabase".format(tournament_name)) + \
                render_template('tournamentform.html') + \
                render_template('footer.html')
-               )            
+               )
 
     else:
         return Response(
@@ -465,20 +465,24 @@ def tournaments_page():
            render_template('list.html', title="All Tournaments", route="tournaments", items=tournaments, color=colors) + \
            render_template('footer.html')
 
-@app.route('/sqltest')
-def sqltest():
+@app.route('/json/player/<nick>')
+def jsonplayer(nick):
     with dbapi2.connect(app.config['dsn']) as connection:
         cursor = connection.cursor()
-        query = """ SELECT * FROM
-                    (SELECT  t_id as team_ids , SUM(t_1_score) as team_win, SUM(t_2_score) as team_lose, br_stage FROM MATCH LEFT JOIN BRACKET ON MATCH.br_id = BRACKET.br_id WHERE MATCH.br_id  IN (SELECT  br_id FROM BRACKET WHERE BRACKET.tr_id = '1' )  AND BRACKET.br_type = '0' GROUP BY team_ids,br_stage
-                    UNION  ALL
-                    SELECT  t_id_2 as team_ids , SUM(t_2_score) as team_win, SUM(t_1_score) as team_lose,br_stage FROM MATCH LEFT JOIN BRACKET ON MATCH.br_id = BRACKET.br_id WHERE MATCH.br_id  IN (SELECT  br_id FROM BRACKET WHERE BRACKET.tr_id = '1' )  AND BRACKET.br_type = '0' GROUP BY team_ids,br_stage
-                    )as selection ORDER BY br_stage ASC
-                """
-        cursor.execute(query,[6])
+        query = """ SELECT p_nick FROM PLAYER WHERE LOWER(p_nick) LIKE LOWER(%s)"""
+        cursor.execute(query,['%'+nick+'%'])
         result = cursor.fetchall()
         connection.commit()
-    #return render_template('error.html', title="Error Page", error_title="YA-HA-HA", error_body="YOU FOUND ME")
+    return jsonify(result)
+
+@app.route('/json/team/<name>')
+def jsonteam(name):
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor = connection.cursor()
+        query = """ SELECT t_name FROM TEAM WHERE LOWER(t_name) LIKE LOWER(%s)"""
+        cursor.execute(query,['%'+name+'%'])
+        result = cursor.fetchall()
+        connection.commit()
     return jsonify(result)
 
 @app.route('/initdb')
