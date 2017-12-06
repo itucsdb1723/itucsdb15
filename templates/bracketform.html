@@ -1,0 +1,9 @@
+query = """ CREATE TABLE BRACKET(
+        br_id SERIAL PRIMARY KEY,
+        team_count INTEGER,
+        br_type BOOLEAN,
+        br_stage SMALLINT,
+        tr_id INTEGER,
+        br_name VARCHAR(60) NOT NULL,
+        FOREIGN KEY(tr_id) REFERENCES TOURNAMENT(tr_id) ON DELETE CASCADE
+        )"""

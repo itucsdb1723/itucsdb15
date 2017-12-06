@@ -1,0 +1,8 @@
+query = """ CREATE TABLE PARTICIPANT(
+        tr_id INTEGER,
+        t_id INTEGER,
+        qualifier_id INTEGER,
+        FOREIGN KEY(tr_id) REFERENCES TOURNAMENT(tr_id) ON DELETE CASCADE,
+        FOREIGN KEY(t_id) REFERENCES TEAM(t_id) ON DELETE CASCADE,
+        FOREIGN KEY(qualifier_id) REFERENCES TOURNAMENT(tr_id) ON DELETE CASCADE
+        )"""
