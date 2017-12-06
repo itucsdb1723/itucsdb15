@@ -372,7 +372,7 @@ def tournament_profile(trname):
         cursor = connection.cursor()
         query = """ SELECT * FROM TOURNAMENT WHERE tr_name=%s"""
         cursor.execute(query,[trname])
-        tournament_info = cursor.fetchall()[0]
+        tournament_info = cursor.fetchone()
         query2 ="""SELECT *
                         FROM (SELECT TEAM.t_name,SUM(won_mathces) AS winScoreTotal,SUM(lose_mathces) AS loseScoreTotal,SUM(team_won) AS teamWonTotal ,SUM(team_lose) AS teamLoseTotal,br_stage
                                 FROM(
@@ -397,22 +397,41 @@ def tournament_profile(trname):
         cursor.execute(query4,[tournament_info[0]])
         participants = cursor.fetchall()
 
+        query5 = """SELECT role,p_nick,p_name,p_surname,lang,priority
+                        FROM (SELECT p_id,lang,role,priority
+                                FROM TALENT LEFT JOIN ROLE ON ROLE.rl_id = TALENT.rl_id WHERE TALENT.tr_id = %s
+                                ) AS talents LEFT JOIN PLAYER ON PLAYER.p_id = talents.p_id  ORDER BY lang,priority ASC"""
+        cursor.execute(query5,[tournament_info[0]])
+        talents = cursor.fetchall()
+        langNumber = len({x[4] for x in talents})
+        roleNumber = len({x[0] for x in talents})
+        talentsInfo = [[[] for y in range(roleNumber)] for x in range(langNumber)]
+        langNoCurrent = 0
+        roleNoCurrent = 0
+        print(len(talents))
+
+        x = 0
+        while x < len(talents):
+            curRole = talents[x][0]
+            curLang = talents[x][4]
+            while x < len(talents) and curLang == talents[x][4]:
+                if curRole != talents[x][0]:
+                    curRole = talents[x][0]
+                    roleNoCurrent += 1
+                talentsInfo[langNoCurrent][roleNoCurrent].append(talents[x])
+                x += 1
+            langNoCurrent += 1
+
+
 
         #CLEAN THIS
-        if len(groupMatches) > 0:
-            render_groups = 1
-        else:
-            render_groups = 0
-
         groupNumber = len({x[5] for x in groupMatches })
         groupMatchesInfo = [[] for x in range(groupNumber)]
         curStage = groupMatches[0][5]
         for x in range(len(groupMatches)):  #Gives the number of groups
-            if curStage == groupMatches[x][5]:
-                groupMatchesInfo[curStage].append(groupMatches[x])
-            else:
+            if curStage != groupMatches[x][5]:
                 curStage = groupMatches[x][5]
-                groupMatchesInfo[curStage].append(groupMatches[x])
+            groupMatchesInfo[curStage].append(groupMatches[x])
 
         if len(playoffMatches) > 0:
             render_playoffs = 0
@@ -437,7 +456,8 @@ def tournament_profile(trname):
         return render_template('header.html', title="Dotabase", route="tournaments") + \
                render_template('tournamentprofile.html', name=tournament_info[1], info=info, )  + \
                render_template('teamlist.html', route="tournaments", items=participants) + \
-               render_template('groups.html', route="tournaments", title = groupNumber,items=groupMatchesInfo, render=render_groups) + \
+               render_template('talents.html', route="tournaments", items=talentsInfo) + \
+               render_template('groups.html', route="tournaments", title = groupNumber,items=groupMatchesInfo) + \
                render_template('playoffs.html', route="tournaments", items=playoffMatches, render=render_playoffs) + \
                render_template('footer.html')
 
@@ -510,8 +530,6 @@ def initialize_database():
         query = """DROP TABLE IF EXISTS PARTICIPANT CASCADE"""
         cursor.execute(query)
         query = """DROP TABLE IF EXISTS MATCH CASCADE"""
-        cursor.execute(query)
-        query = """DROP TABLE IF EXISTS PARTICIPANT CASCADE"""
         cursor.execute(query)
         query = """DROP TABLE IF EXISTS ROLE CASCADE"""
         cursor.execute(query)
@@ -590,38 +608,39 @@ def initialize_database():
         cursor.execute(query)
         query = """ CREATE TABLE ROLE(
         rl_id SERIAL PRIMARY KEY,
-        role VARCHAR(60)
+        role VARCHAR(60),
+        priority SMALLINT
         )"""
         cursor.execute(query)
-        query = """INSERT INTO ROLE (role)
-        VALUES ('Host')"""
+        query = """INSERT INTO ROLE (role,priority)
+        VALUES ('Host',1)"""
         cursor.execute(query)
-        query = """INSERT INTO ROLE (role)
-        VALUES ('Co-Host')"""
+        query = """INSERT INTO ROLE (role,priority)
+        VALUES ('Co-Host',2)"""
         cursor.execute(query)
-        query = """INSERT INTO ROLE (role)
-        VALUES ('Analyst')"""
+        query = """INSERT INTO ROLE (role,priority)
+        VALUES ('Analyst',3)"""
         cursor.execute(query)
-        query = """INSERT INTO ROLE (role)
-        VALUES ('Commentator')"""
+        query = """INSERT INTO ROLE (role,priority)
+        VALUES ('Commentator',3)"""
         cursor.execute(query)
-        query = """INSERT INTO ROLE (role)
-        VALUES ('Observer')"""
+        query = """INSERT INTO ROLE (role,priority)
+        VALUES ('Observer',4)"""
         cursor.execute(query)
-        query = """INSERT INTO ROLE (role)
-        VALUES ('Interviewer')"""
+        query = """INSERT INTO ROLE (role,priority)
+        VALUES ('Interviewer',4)"""
         cursor.execute(query)
-        query = """INSERT INTO ROLE (role)
-        VALUES ('Content Creator')"""
+        query = """INSERT INTO ROLE (role,priority)
+        VALUES ('Content Creator',5)"""
         cursor.execute(query)
-        query = """INSERT INTO ROLE (role)
-        VALUES ('Newbie Stream')"""
+        query = """INSERT INTO ROLE (role,priority)
+        VALUES ('Newbie Stream',5)"""
         cursor.execute(query)
-        query = """INSERT INTO ROLE (role)
-        VALUES ('Interpreter')"""
+        query = """INSERT INTO ROLE (role,priority)
+        VALUES ('Interpreter',5)"""
         cursor.execute(query)
-        query = """INSERT INTO ROLE (role)
-        VALUES ('Statistician')"""
+        query = """INSERT INTO ROLE (role,priority)
+        VALUES ('Statistician',5)"""
         cursor.execute(query)
 
         query = """ CREATE TABLE TALENT(
