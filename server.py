@@ -104,7 +104,7 @@ def add_player():
     else:
         return Response(
                render_template('header.html', title="Admin Login") + \
-               render_template('playerform.html') + \
+               render_template('playerform.html', countries=countries) + \
                render_template('footer.html')
                )
 
