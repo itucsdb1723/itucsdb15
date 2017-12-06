@@ -58,7 +58,7 @@ def login():
 @login_required
 def logout():
     logout_user()
-    return Response('<p>Logged out</p>')
+    return Response(render_template('error.html',title="Logged out",error="User logged out successfully!"))
 
 # handle login failed
 @app.errorhandler(401)
@@ -82,7 +82,11 @@ def get_elephantsql_dsn(vcap_services):
 @app.route('/admin')
 @login_required
 def admin():
-    return Response("<a href = /add_player>Add a Player</a><br><a href = /add_team>Add a Team</a><br><a href = /add_tournament>Add a Tournament</a>")
+    return Response(
+           render_template('header.html', title="Admin Login") + \
+           render_template('alert.html', color="success",text="Welcome to the admin page!") + \
+           render_template('footer.html')
+           )
 
 @app.route("/add_player",methods=["GET", "POST"])
 @login_required
