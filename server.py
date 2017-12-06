@@ -82,29 +82,117 @@ def get_elephantsql_dsn(vcap_services):
 @app.route('/admin')
 @login_required
 def admin():
-    return Response("<a href = /add_player>Add a Player</a>")
+    return Response("<a href = /add_player>Add a Player</a><br><a href = /add_team>Add a Team</a><br><a href = /add_tournament>Add a Tournament</a>")
 
-@app.route("/add_player", methods=["GET", "POST"])
+@app.route("/add_player",methods=["GET", "POST"])
+@login_required
 def add_player():
     if request.method == 'POST':
-        account_id = request.form['account_id']
-        nick = request.form['nick']
-        name = request.form['name']
-        surname = request.form['surname']
-        country = request.form['country']
-        birth_date = request.form['birth_date']
-        teamid = request.form['teamid']
-        mmr = request.form['mmr']
-        query = """INSERT INTO PLAYER (p_accountid,p_nick,p_name,p_surname,p_country,p_birth,p_mmr,t_id)
-        VALUES ('{}','{}','{}','{}','{}','{}','{}','{}')""".format(account_id,nick,name,surname,country,birth_date,mmr,teamid)
+        s = ""
+        v = ""
+        account_id = (request.form['account_id'],"p_accountid")
+        nick = (request.form['nick'],"p_nick")
+        name = (request.form['name'],"p_name")
+        surname = (request.form['surname'],"p_surname")
+        country = (request.form['country'],"p_country")
+        birth_date = (request.form['birth_date'],"p_birth")
+        teamid = (request.form['teamid'],"t_id")
+        mmr = (request.form['mmr'],"p_mmr")
+        for var in (account_id,nick,name,surname,country,birth_date,teamid,mmr):
+            if(var[0] == ""):
+                var = None
+            else:
+                if(s==""):
+                    s = var[1]
+                    v = "'"+var[0]+"'"
+                else:
+                    s += "," + var[1]
+                    v += ","+"'"+var[0]+"'"
+
+
+        query = """INSERT INTO PLAYER ({})
+        VALUES ({})""".format(s,v)
         with dbapi2.connect(app.config['dsn']) as connection:
             cursor = connection.cursor()
-            cursor.execute(query)
-            return redirect(url_for('admin'))
+            try:
+                cursor.execute(query)
+            except dbapi2.DataError:
+                lcolor = "danger"
+                ltext = "Invalid data type"                
+                pass
+            except dbapi2.IntegrityError:
+                lcolor = "danger"
+                ltext = "Passed empty value to NON-NULL variable"
+            else:
+                lcolor = "success"
+                ltext = "{} added to the dotabase".format(nick)
+                pass
+        return Response(
+               render_template('header.html', title="Admin Login") + \
+               render_template('alert.html', color=lcolor,text=ltext) + \
+               render_template('playerform.html') + \
+               render_template('footer.html')
+               )
     else:
         return Response(
                render_template('header.html', title="Admin Login") + \
                render_template('playerform.html', countries=countries) + \
+               render_template('footer.html')
+               )
+
+@app.route("/add_team", methods=["GET", "POST"])
+@login_required
+def add_team():
+    if request.method == 'POST':
+        team_name = request.form['team_name']
+        team_tag = request.form['team_tag']
+        region = request.form['region']
+        date_created = request.form['date_created']
+
+        query = """INSERT INTO TEAM (t_name,t_tag,t_region,t_created)
+        VALUES ('{}','{}','{}','{}')""".format(team_name,team_tag,region,date_created)
+        with dbapi2.connect(app.config['dsn']) as connection:
+            cursor = connection.cursor()
+            cursor.execute(query)
+        return Response(
+               render_template('header.html', title="Admin Login") + \
+               render_template('alert.html', color="success",text="{} added to the dotabase".format(team_name)) + \
+               render_template('teamform.html') + \
+               render_template('footer.html')
+               )            
+    else:
+        return Response(
+               render_template('header.html', title="Admin Login") + \
+               render_template('teamform.html') + \
+               render_template('footer.html')
+               )
+
+@app.route("/add_tournament", methods=["GET", "POST"])
+@login_required
+def add_tournament():
+    if request.method == 'POST':
+        tournament_name = request.form['tournament_name']
+        date_started = request.form['date_started']
+        date_ended = request.form['date_ended']
+        parent_id = request.form['parent_id']
+
+        query = """INSERT INTO TOURNAMENT (tr_name,tr_date,tr_enddate,parent_tr_id)
+        VALUES ('{}','{}','{}','{}')""".format(tournament_name,date_started,date_ended,parent_id)
+        print(query)
+        with dbapi2.connect(app.config['dsn']) as connection:
+            cursor = connection.cursor()
+            cursor.execute(query)
+        return Response(
+               render_template('header.html', title="Admin Login") + \
+               render_template('alert.html', color="success",text="{} added to the dotabase".format(tournament_name)) + \
+               render_template('tournamentform.html') + \
+               render_template('footer.html')
+               )            
+
+    else:
+        return Response(
+               render_template('header.html', title="Admin Login") + \
+               render_template('tournamentform.html') + \
                render_template('footer.html')
                )
 
@@ -114,6 +202,7 @@ def home_page():
     return render_template('header.html', title="Dotabase", route="home") + \
            render_template('home.html') + \
            render_template('footer.html')
+
 
 @app.route('/player/<nick>')
 def player_profile(nick):
@@ -412,6 +501,8 @@ def initialize_database():
         query = """DROP TABLE IF EXISTS COMPETITOR CASCADE"""
         cursor.execute(query)
         query = """DROP TABLE IF EXISTS MATCH CASCADE"""
+        cursor.execute(query)
+        query = """DROP TABLE IF EXISTS PARTICIPANT CASCADE"""
         cursor.execute(query)
 
         query = """ CREATE TABLE TEAM(
