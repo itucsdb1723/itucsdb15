@@ -509,7 +509,10 @@ def initialize_database():
         cursor.execute(query)
         query = """DROP TABLE IF EXISTS PARTICIPANT CASCADE"""
         cursor.execute(query)
-
+        query = """DROP TABLE IF EXISTS ROLE CASCADE"""
+        cursor.execute(query)
+        query = """DROP TABLE IF EXISTS TALENT CASCADE"""
+        cursor.execute(query)
         query = """ CREATE TABLE TEAM(
         t_id SERIAL PRIMARY KEY,
         t_name VARCHAR(60),
@@ -645,17 +648,17 @@ def initialize_database():
         cursor.execute(query)
         query = """INSERT INTO PLAYER (p_nick,p_name,p_surname,p_country) VALUES ('Fogged','Ioannis ','Loucas','US')"""
         cursor.execute(query)
-        query = """INSERT INTO PLAYER (p_nick,p_name,p_surname,p_country) VALUES ('Capitalist ','Austin ','Walsh','US')"""
+        query = """INSERT INTO PLAYER (p_nick,p_name,p_surname,p_country) VALUES ('Capitalist','Austin ','Walsh','US')"""
         cursor.execute(query)
-        query = """INSERT INTO PLAYER (p_nick,p_name,p_surname,p_country) VALUES ('ODPixel ','Owen ','Davies','GB')"""
+        query = """INSERT INTO PLAYER (p_nick,p_name,p_surname,p_country) VALUES ('ODPixel','Owen ','Davies','GB')"""
         cursor.execute(query)
-        query = """INSERT INTO PLAYER (p_nick,p_name,p_surname,p_country) VALUES ('Blitz ','William ','Lee','US')"""
+        query = """INSERT INTO PLAYER (p_nick,p_name,p_surname,p_country) VALUES ('Blitz','William ','Lee','US')"""
         cursor.execute(query)
-        query = """INSERT INTO PLAYER (p_nick,p_name,p_surname,p_country) VALUES ('GoDz ','David ','Parker','AU')"""
+        query = """INSERT INTO PLAYER (p_nick,p_name,p_surname,p_country) VALUES ('GoDz','David ','Parker','AU')"""
         cursor.execute(query)
-        query = """INSERT INTO PLAYER (p_nick,p_name,p_surname,p_country) VALUES ('Lyrical ','Gabriel ','Cruz','US')"""
+        query = """INSERT INTO PLAYER (p_nick,p_name,p_surname,p_country) VALUES ('Lyrical','Gabriel ','Cruz','US')"""
         cursor.execute(query)
-        query = """INSERT INTO PLAYER (p_nick,p_name,p_surname,p_country) VALUES ('WinteR ','Chan Litt ','Binn','MY')"""
+        query = """INSERT INTO PLAYER (p_nick,p_name,p_surname,p_country) VALUES ('WinteR','Chan Litt ','Binn','MY')"""
         cursor.execute(query)
 
         query = """INSERT INTO TALENT(p_id ,tr_id,rl_id,lang)
