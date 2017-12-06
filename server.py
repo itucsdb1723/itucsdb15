@@ -477,11 +477,14 @@ def jsonplayer(nick):
 def jsonteam(name):
     with dbapi2.connect(app.config['dsn']) as connection:
         cursor = connection.cursor()
-        query = """ SELECT t_name FROM TEAM WHERE LOWER(t_name) LIKE LOWER(%s)"""
+        query = """ SELECT t_id,t_name FROM TEAM WHERE LOWER(t_name) LIKE LOWER(%s)"""
         cursor.execute(query,['%'+name+'%'])
         result = cursor.fetchall()
         connection.commit()
-    return jsonify(result)
+    resultList = []
+    for i in result:
+        resultList.append({"id":i[0],"name":i[1]})
+    return jsonify(resultList)
 
 @app.route('/initdb')
 def initialize_database():
