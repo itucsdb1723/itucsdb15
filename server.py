@@ -581,6 +581,52 @@ def initialize_database():
         FOREIGN KEY(br_id) REFERENCES BRACKET(br_id) ON DELETE CASCADE
         )"""
         cursor.execute(query)
+        query = """ CREATE TABLE ROLE(
+        rl_id SERIAL PRIMARY KEY,
+        role VARCHAR(60)
+        )"""
+        cursor.execute(query)
+        query = """INSERT INTO ROLE (role)
+        VALUES ('Host')"""
+        cursor.execute(query)
+        query = """INSERT INTO ROLE (role)
+        VALUES ('Co-Host')"""
+        cursor.execute(query)
+        query = """INSERT INTO ROLE (role)
+        VALUES ('Analyst')"""
+        cursor.execute(query)
+        query = """INSERT INTO ROLE (role)
+        VALUES ('Commentator')"""
+        cursor.execute(query)
+        query = """INSERT INTO ROLE (role)
+        VALUES ('Observer')"""
+        cursor.execute(query)
+        query = """INSERT INTO ROLE (role)
+        VALUES ('Interviewer')"""
+        cursor.execute(query)
+        query = """INSERT INTO ROLE (role)
+        VALUES ('Content Creator')"""
+        cursor.execute(query)
+        query = """INSERT INTO ROLE (role)
+        VALUES ('Newbie Stream')"""
+        cursor.execute(query)
+        query = """INSERT INTO ROLE (role)
+        VALUES ('Interpreter')"""
+        cursor.execute(query)
+        query = """INSERT INTO ROLE (role)
+        VALUES ('Statistician')"""
+        cursor.execute(query)
+
+        query = """ CREATE TABLE TALENT(
+        p_id INTEGER,
+        tr_id INTEGER,
+        rl_id INTEGER,
+        lang VARCHAR(2),
+        FOREIGN KEY (p_id)  REFERENCES PLAYER(p_id) ON DELETE CASCADE,
+        FOREIGN KEY(tr_id) REFERENCES TOURNAMENT(tr_id) ON DELETE CASCADE,
+        FOREIGN KEY(rl_id) REFERENCES ROLE(rl_id) ON DELETE CASCADE
+        )"""
+        cursor.execute(query)
 
         query = """INSERT INTO TOURNAMENT (tr_name,tr_date,tr_enddate)
         VALUES ('SL i-League Invitational Season 3','2017-10-12','2017-10-15')"""
@@ -593,6 +639,72 @@ def initialize_database():
         cursor.execute(query)
         query = """INSERT INTO TOURNAMENT (tr_name,tr_date,tr_enddate)
         VALUES ('AMD SAPPHIRE Dota PIT League','2017-11-02','2017-11-05')"""
+        cursor.execute(query)
+
+        query = """INSERT INTO PLAYER (p_nick,p_name,p_surname,p_country) VALUES ('Sheever','Jorien','van der Heijden','NL')"""
+        cursor.execute(query)
+        query = """INSERT INTO PLAYER (p_nick,p_name,p_surname,p_country) VALUES ('Fogged','Ioannis ','Loucas','US')"""
+        cursor.execute(query)
+        query = """INSERT INTO PLAYER (p_nick,p_name,p_surname,p_country) VALUES ('Capitalist ','Austin ','Walsh','US')"""
+        cursor.execute(query)
+        query = """INSERT INTO PLAYER (p_nick,p_name,p_surname,p_country) VALUES ('ODPixel ','Owen ','Davies','GB')"""
+        cursor.execute(query)
+        query = """INSERT INTO PLAYER (p_nick,p_name,p_surname,p_country) VALUES ('Blitz ','William ','Lee','US')"""
+        cursor.execute(query)
+        query = """INSERT INTO PLAYER (p_nick,p_name,p_surname,p_country) VALUES ('GoDz ','David ','Parker','AU')"""
+        cursor.execute(query)
+        query = """INSERT INTO PLAYER (p_nick,p_name,p_surname,p_country) VALUES ('Lyrical ','Gabriel ','Cruz','US')"""
+        cursor.execute(query)
+        query = """INSERT INTO PLAYER (p_nick,p_name,p_surname,p_country) VALUES ('WinteR ','Chan Litt ','Binn','MY')"""
+        cursor.execute(query)
+
+        query = """INSERT INTO TALENT(p_id ,tr_id,rl_id,lang)
+        VALUES((SELECT p_id from PLAYER WHERE p_nick = 'Sheever'),
+               (SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Invitational Season 3%'),
+               (SELECT rl_id FROM ROLE WHERE role = 'Host'),
+               'EN')"""
+        cursor.execute(query)
+        query = """INSERT INTO TALENT(p_id ,tr_id,rl_id,lang)
+        VALUES((SELECT p_id from PLAYER WHERE p_nick = 'Fogged'),
+               (SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Invitational Season 3%'),
+               (SELECT rl_id FROM ROLE WHERE role = 'Commentator'),
+               'EN')"""
+        cursor.execute(query)
+        query = """INSERT INTO TALENT(p_id ,tr_id,rl_id,lang)
+        VALUES((SELECT p_id from PLAYER WHERE p_nick = 'Capitalist'),
+               (SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Invitational Season 3%'),
+               (SELECT rl_id FROM ROLE WHERE role = 'Commentator'),
+               'EN')"""
+        cursor.execute(query)
+        query = """INSERT INTO TALENT(p_id ,tr_id,rl_id,lang)
+        VALUES((SELECT p_id from PLAYER WHERE p_nick = 'ODPixel'),
+               (SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Invitational Season 3%'),
+               (SELECT rl_id FROM ROLE WHERE role = 'Commentator'),
+               'EN')"""
+        cursor.execute(query)
+        query = """INSERT INTO TALENT(p_id ,tr_id,rl_id,lang)
+        VALUES((SELECT p_id from PLAYER WHERE p_nick = 'Blitz'),
+               (SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Invitational Season 3%'),
+               (SELECT rl_id FROM ROLE WHERE role = 'Commentator'),
+               'EN')"""
+        cursor.execute(query)
+        query = """INSERT INTO TALENT(p_id ,tr_id,rl_id,lang)
+        VALUES((SELECT p_id from PLAYER WHERE p_nick = 'GoDz'),
+               (SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Invitational Season 3%'),
+               (SELECT rl_id FROM ROLE WHERE role = 'Analyst'),
+               'EN')"""
+        cursor.execute(query)
+        query = """INSERT INTO TALENT(p_id ,tr_id,rl_id,lang)
+        VALUES((SELECT p_id from PLAYER WHERE p_nick = 'Lyrical'),
+               (SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Invitational Season 3%'),
+               (SELECT rl_id FROM ROLE WHERE role = 'Analyst'),
+               'EN')"""
+        cursor.execute(query)
+        query = """INSERT INTO TALENT(p_id ,tr_id,rl_id,lang)
+        VALUES((SELECT p_id from PLAYER WHERE p_nick = 'WinteR'),
+               (SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Invitational Season 3%'),
+               (SELECT rl_id FROM ROLE WHERE role = 'Analyst'),
+               'EN')"""
         cursor.execute(query)
 
 
