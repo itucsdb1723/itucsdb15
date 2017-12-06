@@ -100,7 +100,7 @@ def add_player():
         birth_date = (request.form['birth_date'],"p_birth")
         teamid = (request.form['teamid'],"t_id")
         mmr = (request.form['mmr'],"p_mmr")
-        
+
         s = ""
         v = ""
         for var in (account_id,nick,name,surname,country,birth_date,teamid,mmr):
@@ -444,8 +444,6 @@ def tournament_profile(trname):
         talentsInfo = [[[] for y in range(roleNumber)] for x in range(langNumber)]
         langNoCurrent = 0
         roleNoCurrent = 0
-        print(len(talents))
-
         x = 0
         while x < len(talents):
             curRole = talents[x][0]
