@@ -436,41 +436,20 @@ def tournament_profile(trname):
         query5 = """SELECT role,p_nick,p_name,p_surname,lang,priority
                         FROM (SELECT p_id,lang,role,priority
                                 FROM TALENT LEFT JOIN ROLE ON ROLE.rl_id = TALENT.rl_id WHERE TALENT.tr_id = %s
-                                ) AS talents LEFT JOIN PLAYER ON PLAYER.p_id = talents.p_id  ORDER BY lang,priority ASC"""
+                                ) AS talents LEFT JOIN PLAYER ON PLAYER.p_id = talents.p_id  ORDER BY lang ASC, priority ASC"""
         cursor.execute(query5,[tournament_info[0]])
         talents = cursor.fetchall()
-        langNumber = len({x[4] for x in talents})
-        roleNumber = len({x[0] for x in talents})
-        talentsInfo = [[[] for y in range(roleNumber)] for x in range(langNumber)]
-        langNoCurrent = 0
-        roleNoCurrent = 0
-        x = 0
-        while x < len(talents):
-            curRole = talents[x][0]
-            curLang = talents[x][4]
-            while x < len(talents) and curLang == talents[x][4]:
-                if curRole != talents[x][0]:
-                    curRole = talents[x][0]
-                    roleNoCurrent += 1
-                talentsInfo[langNoCurrent][roleNoCurrent].append(talents[x])
-                x += 1
-            langNoCurrent += 1
 
+        langs = sorted({x[4] for x in talents})
+        talentsInfo = []
+        for y in langs:
+            roles = sorted({x[4] for x in talents})
+            talentsInfo.append([x for x in talents if x[4] == y])
 
-
-        #CLEAN THIS
-        groupNumber = len({x[5] for x in groupMatches })
-        groupMatchesInfo = [[] for x in range(groupNumber)]
-        curStage = groupMatches[0][5]
-        for x in range(len(groupMatches)):  #Gives the number of groups
-            if curStage != groupMatches[x][5]:
-                curStage = groupMatches[x][5]
-            groupMatchesInfo[curStage].append(groupMatches[x])
-
-        if len(playoffMatches) > 0:
-            render_playoffs = 0
-        else:
-            render_playoffs = 1
+        groups = sorted({x[5] for x in groupMatches })
+        groupMatchesInfo = []
+        for y in groups:
+            groupMatchesInfo.append([x for x in groupMatches if x[5]==y])
 
 
         info = []
@@ -491,16 +470,10 @@ def tournament_profile(trname):
                render_template('tournamentprofile.html', name=tournament_info[1], info=info, )  + \
                render_template('teamlist.html', route="tournaments", items=participants) + \
                render_template('talents.html', route="tournaments", items=talentsInfo) + \
-               render_template('groups.html', route="tournaments", title = groupNumber,items=groupMatchesInfo) + \
-               render_template('playoffs.html', route="tournaments", items=playoffMatches, render=render_playoffs) + \
+               render_template('groups.html', route="tournaments", items=groupMatchesInfo) + \
+               render_template('playoffs.html', route="tournaments", items=playoffMatches) + \
                render_template('footer.html')
 
-        #TO DO: FIND BRACKET TYPES -> IF EXIST DRAW & DO PROPER THINGS FOR EACH BRACKET TYPE.
-        #GROUPS -> DRAW TABLE ACCORDING TO WIN-LOSS NUMBERS
-        #PLAYOFFS ->DRAW BRACKET GRAPH.(LAST 16, SEMI, FINAL ETC).
-        #CREATE GROUP AND PLAYOFF TEMPLATE.
-        #ALSO MATCH INFO CAN BE ADDED WHEN HOVERED OVER TEAM'S NAME.
-        #ALSO MATCH PAGES CAN BE ADDED ACCORDING TO MATCH ID'S
 
 @app.route('/tournaments')
 def tournaments_page():
@@ -763,7 +736,7 @@ def initialize_database():
         query = """INSERT INTO TALENT(p_id ,tr_id,rl_id,lang)
         VALUES((SELECT p_id from PLAYER WHERE p_nick = 'WinteR'),
                (SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Invitational Season 3%'),
-               (SELECT rl_id FROM ROLE WHERE role = 'Analyst'),
+               (SELECT rl_id FROM ROLE WHERE role = 'Interpreter'),
                'EN')"""
         cursor.execute(query)
 
