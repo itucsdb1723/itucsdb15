@@ -475,7 +475,7 @@ def add_result():
                render_template('header.html', title="Admin Login") + \
                render_template('bracketform.html') + \
                render_template('footer.html')
-               )        
+               )
 
         query = """ CREATE TABLE ROSTER(
         p_id INTEGER NOT NULL,
@@ -538,13 +538,43 @@ def add_roster():
                render_template('footer.html')
                )
 
-        
+
 
 @app.route('/home')
 @app.route('/')
 def home_page():
+    t_query = """ SELECT t_name,dpc_points
+                FROM(
+                    SELECT t_id, sum(dpc_points) as dpc_points
+                    FROM (
+                        SELECT ROW_NUMBER() OVER (PARTITION BY t_id ORDER BY dpc_points DESC) AS rowNumber, result.*
+                        FROM (
+                            SELECT p_id, max(t_id) as t_id, SUM(dpc_points) AS dpc_points
+                            FROM RESULT
+                            GROUP BY p_id
+                            ) AS result
+                        ) AS RESULTS
+                    WHERE results.rowNumber<=3
+                    GROUP BY t_id
+                    ) AS POINTS
+                RIGHT JOIN TEAM
+                ON POINTS.t_id = TEAM.t_id
+                ORDER BY (dpc_points IS NULL),dpc_points DESC
+                LIMIT 8
+            """
+    tr_query = """ SELECT tr_name,tr_date FROM TOURNAMENT WHERE tr_date>=%s ORDER BY tr_date DESC LIMIT 8"""
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor = connection.cursor()
+        cursor.execute(t_query)
+        teams = cursor.fetchall()
+        cursor.execute(tr_query,[date.today()])
+        tournaments = cursor.fetchall()
     return render_template('header.html', title="Dotabase", route="home") + \
            render_template('home.html') + \
+           render_template('dividepage.html', sizes = (5,7), content=(
+           render_template('list.html', title="Top 10 Teams", route="team", items=teams, badge="DPC Points"),
+           render_template('list.html', title="Upcoming Tournaments", route="tournaments", items=tournaments, badge="")
+           )) + \
            render_template('footer.html')
 
 
@@ -622,7 +652,7 @@ def player_profile(nick):
            render_template('stats.html', stats=stats) + \
            render_template('listcard.html', mainTitle='Results',items=resultlist,titles=resultTitles,colSizes=resultColArray) + \
            render_template('listcard.html', mainTitle='Team History',items=history,titles=historyTitles,colSizes=historyColArray) + \
-           render_template('footer.html')
+           render_template('footer.html', closetag=("div","div"))
 
 @app.route('/player')
 def players_page():
@@ -668,7 +698,7 @@ def team_profile(tname):
                render_template('profile.html', name=team_info[1], info=info, ) + \
                render_template('listcard.html', mainTitle='Roster', items=rosterList, titles=rosterTitles, colSizes=rosterColArray) + \
                render_template('listcard.html', mainTitle='Result', items=resultList, titles=resultTitles, colSizes=resultColArray) + \
-               render_template('footer.html')
+               render_template('footer.html', closetag=("div","div"))
 
 @app.route('/team')
 def teams_page():
@@ -776,7 +806,7 @@ def tournament_profile(trname):
                render_template('talents.html', route="tournaments", items=talentsInfo) + \
                render_template('groups.html', route="tournaments", items=groupMatchesInfo) + \
                render_template('playoffs.html', route="tournaments", items=playoffMatches) + \
-               render_template('footer.html')
+               render_template('footer.html', closetag=("div"))
 
 
 @app.route('/tournaments')

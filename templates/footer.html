@@ -1,3 +1,18 @@
+{% if closetag is defined %}
+{% for x in closetag %}
+</{{x}}>
+{% endfor %}
+{% endif %}
 </div>
+<footer class="bg-dark text-light mt-5">
+  <div class="container py-4">
+    <p class="m-0 lead">
+    Dotabase <small>2017-2018</small>
+    </p>
+    <p class="m-0">
+    Created by <a class="text-white" href="">Selim Eren Eryılmaz</a>, <a class="text-white" href="">Halil Özgür</a>, <a class="text-white" href="">Alperen Gürses</a> as a BLG361 - Database Management Systems project.
+    </p>
+  </div>
+</footer>
 </body>
 </html>
