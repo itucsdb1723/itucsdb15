@@ -420,13 +420,13 @@ def add_talent():
         return Response(
                render_template('header.html', title="Admin Login") + \
                render_template('alert.html', color=lcolor,text=ltext) + \
-               render_template('bracketform.html') + \
+               render_template('talentform.html') + \
                render_template('footer.html')
                )
     else:
         return Response(
                render_template('header.html', title="Admin Login") + \
-               render_template('bracketform.html') + \
+               render_template('talentform.html') + \
                render_template('footer.html')
                )
 
@@ -469,13 +469,13 @@ def add_result():
         return Response(
                render_template('header.html', title="Admin Login") + \
                render_template('alert.html', color=lcolor,text=ltext) + \
-               render_template('bracketform.html') + \
+               render_template('resultform.html') + \
                render_template('footer.html')
                )
     else:
         return Response(
                render_template('header.html', title="Admin Login") + \
-               render_template('bracketform.html') + \
+               render_template('resultform.html') + \
                render_template('footer.html')
                )
 
@@ -518,13 +518,13 @@ def add_roster():
         return Response(
                render_template('header.html', title="Admin Login") + \
                render_template('alert.html', color=lcolor,text=ltext) + \
-               render_template('bracketform.html') + \
+               render_template('rosterform.html') + \
                render_template('footer.html')
                )
     else:
         return Response(
                render_template('header.html', title="Admin Login") + \
-               render_template('bracketform.html') + \
+               render_template('rosterform.html') + \
                render_template('footer.html')
                )
 
