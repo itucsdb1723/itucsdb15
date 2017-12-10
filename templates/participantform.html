@@ -1,24 +1,46 @@
 <div class="container my-5">
 
 <form action="" method="post">
+
   <div class="form-group row">
     <label for="inputTournamentId" class="col-sm-2 col-form-label-lg">Tournament ID</label>
     <div class="col-sm-10">
-      <input type="number" class="form-control form-control-lg" name=tr_id id="inputTournamentId" placeholder="Tournament's ID">
+      <input type="number" readonly class="form-control form-control-lg" name=tr_id id="inputTournamentId" placeholder="Tournament's ID">
     </div>
   </div>
+  <div class="form-group row">
+    <label for="inputTournamentName" class="col-sm-2 col-form-label-lg">Tr. Name</label>
+    <div class="col-sm-10">
+      <input type="text" class="form-control form-control-lg" name=tr_name id="inputTournamentName" placeholder="Tournament's Name">
+    </div>
+  </div>
+
   <div class="form-group row">
     <label for="inputTeamId" class="col-sm-2 col-form-label-lg">Team ID</label>
     <div class="col-sm-10">
-      <input type="number" class="form-control form-control-lg" name=t_id id="inputTeamId" placeholder="Team's ID">
+      <input type="number" readonly class="form-control form-control-lg" name=t_id id="inputTeamId" placeholder="Team's ID">
     </div>
   </div>
   <div class="form-group row">
-    <label for="inputQualifierId" class="col-sm-2 col-form-label-lg">Qualifier ID</label>
+    <label for="inputTeamName" class="col-sm-2 col-form-label-lg">Team Name</label>
     <div class="col-sm-10">
-      <input type="number" class="form-control form-control-lg" name=qualifier_id id="inputQualifierId" placeholder="Qualifier's ID">
+      <input type="text" class="form-control form-control-lg" name=t_name id="inputTeamName" placeholder="Team's Name">
     </div>
   </div>
+
+  <div class="form-group row">
+    <label for="inputQualifierId" class="col-sm-2 col-form-label-lg">Qualifier ID</label>
+    <div class="col-sm-10">
+      <input type="number" readonly class="form-control form-control-lg" name=qualifier_id id="inputQualifierId" placeholder="Qualifier's ID">
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="inputQualifierName" class="col-sm-2 col-form-label-lg">Qualifier Name</label>
+    <div class="col-sm-10">
+      <input type="text" class="form-control form-control-lg" name=qualifier_name id="inputQualifierName" placeholder="Qualifier's Name">
+    </div>
+  </div>
+
   <div class="form-group row">
     <div class="col-sm-12 my-5">
       <button type="submit" class="btn btn-dark btn-lg btn-block">Add</button>
@@ -29,3 +51,68 @@
 
 </div>
 
+<script>
+$( function() {
+  $("#inputQualifierName").autocomplete({
+    source: function(request,response){
+      $.getJSON("../json/tournament/"+request.term, function (data) {
+        console.log(data);
+        response($.map(data, function (value) {
+              return {
+                  value: value["id"],
+                  label: value["name"]
+              };
+          }));
+        });
+    },
+    dataType: "json",
+    select: function(event,ui){
+      event.preventDefault();
+      $(this).val(ui.item.label);
+      $("#inputQualifierId").val(ui.item.value);
+    }
+  });
+} );
+$( function() {
+  $("#inputTeamName").autocomplete({
+    source: function(request,response){
+      $.getJSON("../json/team/"+request.term, function (data) {
+        console.log(data);
+        response($.map(data, function (value) {
+              return {
+                  value: value["id"],
+                  label: value["name"]
+              };
+          }));
+        });
+    },
+    dataType: "json",
+    select: function(event,ui){
+      event.preventDefault();
+      $(this).val(ui.item.label);
+      $("#inputTeamId").val(ui.item.value);
+    }
+  });
+} );
+$( function() {
+  $("#inputTournamentName").autocomplete({
+    source: function(request,response){
+      $.getJSON("../json/tournament/"+request.term, function (data) {
+        console.log(data);
+        response($.map(data, function (value) {
+              return {
+                  value: value["id"],
+                  label: value["name"]
+              };
+          }));
+        });
+    },
+    dataType: "json",
+    select: function(event,ui){
+      event.preventDefault();
+      $(this).val(ui.item.label);
+      $("#inputTournamentId").val(ui.item.value);
+    }
+  });
+} );
+</script>

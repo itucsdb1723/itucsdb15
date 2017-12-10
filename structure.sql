@@ -37,7 +37,6 @@ CREATE TABLE TOURNAMENT (
   );
 CREATE TABLE BRACKET(
       br_id SERIAL PRIMARY KEY,
-      team_count INTEGER,
       br_type BOOLEAN,
       br_stage SMALLINT,
       br_index SMALLINT,
@@ -95,7 +94,7 @@ CREATE TABLE RESULT (
 CREATE TABLE ROSTER(
       p_id INTEGER NOT NULL,
       t_id INTEGER NOT NULL,
-      join_date DATE,
+      join_date DATE NOT NULL,
       leave_date DATE,
       position INTEGER,
       is_captain BOOLEAN NOT NULL,

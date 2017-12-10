@@ -129,14 +129,14 @@ def add_player():
                 ltext = "{} added to the dotabase".format(nick[0])
                 pass
         return Response(
-               render_template('header.html', title="Admin Login") + \
+               render_template('header.html', title="Add Player") + \
                render_template('alert.html', color=lcolor,text=ltext) + \
                render_template('playerform.html', countries=countries) + \
                render_template('footer.html')
                )
     else:
         return Response(
-               render_template('header.html', title="Admin Login") + \
+               render_template('header.html', title="Add Player") + \
                render_template('playerform.html', countries=countries) + \
                render_template('footer.html')
                )
@@ -177,14 +177,14 @@ def add_team():
                 ltext = "{} added to the dotabase".format(team_name[0])
                 pass
         return Response(
-               render_template('header.html', title="Admin Login") + \
+               render_template('header.html', title="Add Team") + \
                render_template('alert.html', color=lcolor,text=ltext) + \
                render_template('teamform.html', regions=teamRegionList) + \
                render_template('footer.html')
                )
     else:
         return Response(
-               render_template('header.html', title="Admin Login") + \
+               render_template('header.html', title="Add Team") + \
                render_template('teamform.html', regions=teamRegionList) + \
                render_template('footer.html')
                )
@@ -224,7 +224,7 @@ def add_tournament():
                 ltext = "{} added to the dotabase".format(tournament_name[0])
                 pass
         return Response(
-               render_template('header.html', title="Admin Login") + \
+               render_template('header.html', title="Add Tournament") + \
                render_template('alert.html', color=lcolor,text=ltext) + \
                render_template('tournamentform.html') + \
                render_template('footer.html')
@@ -232,7 +232,7 @@ def add_tournament():
 
     else:
         return Response(
-               render_template('header.html', title="Admin Login") + \
+               render_template('header.html', title="Add Tournament") + \
                render_template('tournamentform.html') + \
                render_template('footer.html')
                )
@@ -273,7 +273,7 @@ def add_bracket():
                 ltext = "{} added to the dotabase".format(br_name[0])
                 pass
         return Response(
-               render_template('header.html', title="Admin Login") + \
+               render_template('header.html', title="Add Bracket") + \
                render_template('alert.html', color=lcolor,text=ltext) + \
                render_template('bracketform.html') + \
                render_template('footer.html')
@@ -281,7 +281,7 @@ def add_bracket():
 
     else:
         return Response(
-               render_template('header.html', title="Admin Login") + \
+               render_template('header.html', title="Add Bracket") + \
                render_template('bracketform.html') + \
                render_template('footer.html')
                )
@@ -320,14 +320,14 @@ def add_participant():
                 ltext = "Participant is added to the dotabase"
                 pass
         return Response(
-               render_template('header.html', title="Admin Login") + \
+               render_template('header.html', title="Add Participant") + \
                render_template('alert.html', color=lcolor,text=ltext) + \
                render_template('participantform.html') + \
                render_template('footer.html')
                )
     else:
         return Response(
-               render_template('header.html', title="Admin Login") + \
+               render_template('header.html', title="Add Participant") + \
                render_template('participantform.html') + \
                render_template('footer.html')
                )
@@ -370,14 +370,14 @@ def add_match():
                 ltext = "Match is added to the dotabase"
                 pass
         return Response(
-               render_template('header.html', title="Admin Login") + \
+               render_template('header.html', title="Add Match") + \
                render_template('alert.html', color=lcolor,text=ltext) + \
                render_template('matchform.html') + \
                render_template('footer.html')
                )
     else:
         return Response(
-               render_template('header.html', title="Admin Login") + \
+               render_template('header.html', title="Add Match") + \
                render_template('matchform.html') + \
                render_template('footer.html')
                )
@@ -417,14 +417,14 @@ def add_talent():
                 ltext = "Talent is added to the dotabase"
                 pass
         return Response(
-               render_template('header.html', title="Admin Login") + \
+               render_template('header.html', title="Add Talent") + \
                render_template('alert.html', color=lcolor,text=ltext) + \
                render_template('talentform.html') + \
                render_template('footer.html')
                )
     else:
         return Response(
-               render_template('header.html', title="Admin Login") + \
+               render_template('header.html', title="Add Talent") + \
                render_template('talentform.html') + \
                render_template('footer.html')
                )
@@ -466,14 +466,14 @@ def add_result():
                 ltext = "Result is added to the dotabase"
                 pass
         return Response(
-               render_template('header.html', title="Admin Login") + \
+               render_template('header.html', title="Add Result") + \
                render_template('alert.html', color=lcolor,text=ltext) + \
                render_template('resultform.html') + \
                render_template('footer.html')
                )
     else:
         return Response(
-               render_template('header.html', title="Admin Login") + \
+               render_template('header.html', title="Add Result") + \
                render_template('resultform.html') + \
                render_template('footer.html')
                )
@@ -515,14 +515,14 @@ def add_roster():
                 ltext = "Roster is added to the dotabase"
                 pass
         return Response(
-               render_template('header.html', title="Admin Login") + \
+               render_template('header.html', title="Add Roster") + \
                render_template('alert.html', color=lcolor,text=ltext) + \
                render_template('rosterform.html') + \
                render_template('footer.html')
                )
     else:
         return Response(
-               render_template('header.html', title="Admin Login") + \
+               render_template('header.html', title="Add Roster") + \
                render_template('rosterform.html') + \
                render_template('footer.html')
                )
@@ -575,7 +575,7 @@ def player_profile(nick):
         query = """SELECT * FROM (SELECT * FROM PLAYER WHERE p_nick=%s) AS PLAYER LEFT JOIN (SELECT ID.p_id,ID.t_id,TEAM.t_name FROM (SELECT p_id,t_id FROM ROSTER WHERE leave_date IS NULL) AS ID LEFT JOIN TEAM ON ID.t_id=TEAM.t_id) AS TEAM ON PLAYER.p_id = TEAM.p_id"""
         cursor.execute(query,[nick])
         player_info = cursor.fetchall()[0]
-        query2 = """ SELECT t_name,join_date,leave_date,position,is_captain FROM ROSTER JOIN TEAM ON ROSTER.t_id=TEAM.t_id WHERE p_id=%s ORDER BY join_date ASC"""
+        query2 = """ SELECT t_name,join_date,leave_date,position,is_captain FROM ROSTER JOIN TEAM ON ROSTER.t_id=TEAM.t_id WHERE p_id=%s ORDER BY leave_date IS NULL DESC, join_date DESC"""
         cursor.execute(query2,[player_info[0]])
         history = cursor.fetchall()
         query3 = """ SELECT SUM(dpc_points),COUNT(*),COUNT(CASE WHEN tr_date<%s THEN 1 END) FROM RESULT LEFT JOIN TOURNAMENT ON RESULT.tr_id=TOURNAMENT.tr_id WHERE p_id=%s """
@@ -662,7 +662,7 @@ def team_profile(tname):
         query = """ SELECT * FROM TEAM WHERE t_name=%s"""
         cursor.execute(query,[tname])
         team_info = cursor.fetchall()[0]
-        query2 = """SELECT p_nick,join_date,leave_date,position,is_captain FROM ROSTER LEFT JOIN PLAYER ON ROSTER.p_id=PLAYER.p_id WHERE ROSTER.t_id = %s ORDER BY position ASC, leave_date DESC """
+        query2 = """SELECT p_nick,join_date,leave_date,position,is_captain FROM ROSTER LEFT JOIN PLAYER ON ROSTER.p_id=PLAYER.p_id WHERE ROSTER.t_id = %s ORDER BY leave_date DESC,position ASC"""
         cursor.execute(query2,[team_info[0]])
         rosterList = cursor.fetchall()
         query3 = """SELECT tr_name,tr_enddate,placement,dpc_points,prize FROM (SELECT tr_id,placement,sum(prize) as prize,SUM(dpc_points) as dpc_points FROM RESULT WHERE RESULT.t_id = %s GROUP BY tr_id,placement) AS RESULT LEFT JOIN TOURNAMENT ON RESULT.tr_id=TOURNAMENT.tr_id ORDER BY tr_enddate DESC """
@@ -856,11 +856,14 @@ def tournaments_page():
 def jsonplayer(nick):
     with dbapi2.connect(app.config['dsn']) as connection:
         cursor = connection.cursor()
-        query = """ SELECT p_nick FROM PLAYER WHERE LOWER(p_nick) LIKE LOWER(%s)"""
+        query = """ SELECT p_id,p_nick FROM PLAYER WHERE LOWER(p_nick) LIKE LOWER(%s)"""
         cursor.execute(query,['%'+nick+'%'])
         result = cursor.fetchall()
         connection.commit()
-    return jsonify(result)
+    resultList = []
+    for i in result:
+        resultList.append({"id":i[0],"name":i[1]})
+    return jsonify(resultList)
 
 @app.route('/json/tournament/<name>')
 def jsontournament(name):
@@ -887,6 +890,16 @@ def jsonteam(name):
     for i in result:
         resultList.append({"id":i[0],"name":i[1]})
     return jsonify(resultList)
+
+@app.route('/json/role/<name>')
+def jsonrole(name):
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor = connection.cursor()
+        query = """ SELECT role FROM ROLE WHERE LOWER(role) LIKE LOWER(%s)"""
+        cursor.execute(query,['%'+name+'%'])
+        result = cursor.fetchall()
+        connection.commit()
+    return jsonify(result)
 
 @app.route('/initdb')
 def initialize_database():
