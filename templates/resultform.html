@@ -1,0 +1,61 @@
+<!-- query = """CREATE TABLE RESULT (
+        p_id INTEGER NOT NULL,
+        t_id INTEGER NOT NULL,
+        tr_id INTEGER NOT NULL,
+        placement INTEGER,
+        dpc_points REAL,
+        prize INTEGER,
+        FOREIGN KEY(p_id) REFERENCES PLAYER(p_id) ON DELETE CASCADE,
+        FOREIGN KEY(t_id) REFERENCES TEAM(t_id) ON DELETE CASCADE,
+        FOREIGN KEY(tr_id) REFERENCES TOURNAMENT(tr_id) ON DELETE CASCADE
+        )""" -->
+
+
+<div class="container my-5">
+
+<form action="" method="post">
+  <div class="form-group row">
+    <label for="inputPlayerId" class="col-sm-2 col-form-label-lg">Player ID</label>
+    <div class="col-sm-10">
+      <input type="number" class="form-control form-control-lg" name=p_id id="inputPlayerId" placeholder="Player's ID">
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="inputTeamId" class="col-sm-2 col-form-label-lg">Team ID</label>
+    <div class="col-sm-10">
+      <input type="number" class="form-control form-control-lg" name=t_id id="inputTeamId" placeholder="Team's ID">
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="inputTournamentId" class="col-sm-2 col-form-label-lg">Tournament ID</label>
+    <div class="col-sm-10">
+      <input type="number" class="form-control form-control-lg" name=tr_id id="inputTournamentId" placeholder="Tournament's ID">
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="inputPlacement" class="col-sm-2 col-form-label-lg">Placement</label>
+    <div class="col-sm-10">
+      <input type="number" class="form-control form-control-lg" name=placement id="inputPlacement" placeholder="Placement">
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="inputDpcPoint" class="col-sm-2 col-form-label-lg">DPC Points</label>
+    <div class="col-sm-10">
+      <input type="number" class="form-control form-control-lg" name=dpc_points id="inputDpcPoint" placeholder="DPC Points">
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="inputPrize" class="col-sm-2 col-form-label-lg">Prize</label>
+    <div class="col-sm-10">
+      <input type="number" class="form-control form-control-lg" name=prize id="inputPrize" placeholder="Prize">
+    </div>
+  </div>
+  <div class="form-group row">
+    <div class="col-sm-12 my-5">
+      <button type="submit" class="btn btn-dark btn-lg btn-block">Add</button>
+    </div>
+  </div>
+
+</form>
+
+</div>

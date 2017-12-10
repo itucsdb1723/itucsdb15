@@ -321,13 +321,13 @@ def add_participant():
         return Response(
                render_template('header.html', title="Admin Login") + \
                render_template('alert.html', color=lcolor,text=ltext) + \
-               render_template('bracketform.html') + \
+               render_template('participantform.html') + \
                render_template('footer.html')
                )
     else:
         return Response(
                render_template('header.html', title="Admin Login") + \
-               render_template('bracketform.html') + \
+               render_template('participantform.html') + \
                render_template('footer.html')
                )
 
@@ -371,13 +371,13 @@ def add_match():
         return Response(
                render_template('header.html', title="Admin Login") + \
                render_template('alert.html', color=lcolor,text=ltext) + \
-               render_template('bracketform.html') + \
+               render_template('matchform.html') + \
                render_template('footer.html')
                )
     else:
         return Response(
                render_template('header.html', title="Admin Login") + \
-               render_template('bracketform.html') + \
+               render_template('matchform.html') + \
                render_template('footer.html')
                )
 
@@ -476,18 +476,6 @@ def add_result():
                render_template('bracketform.html') + \
                render_template('footer.html')
                )        
-
-        query = """ CREATE TABLE ROSTER(
-        p_id INTEGER NOT NULL,
-        t_id INTEGER NOT NULL,
-        join_date DATE,
-        leave_date DATE,
-        position INTEGER,
-        is_captain BOOLEAN NOT NULL,
-        FOREIGN KEY(p_id) REFERENCES PLAYER(p_id) ON DELETE CASCADE,
-        FOREIGN KEY(t_id) REFERENCES TEAM(t_id) ON DELETE CASCADE
-        )"""
-
 
 @app.route("/add_roster", methods=["GET", "POST"])
 @login_required

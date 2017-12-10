@@ -1,0 +1,48 @@
+<!--query = """ CREATE TABLE TALENT(
+        p_id INTEGER,
+        tr_id INTEGER,
+        rl_id INTEGER,
+        lang VARCHAR(2),
+        FOREIGN KEY (p_id)  REFERENCES PLAYER(p_id) ON DELETE CASCADE,
+        FOREIGN KEY(tr_id) REFERENCES TOURNAMENT(tr_id) ON DELETE CASCADE,
+        FOREIGN KEY(rl_id) REFERENCES ROLE(rl_id) ON DELETE CASCADE
+        )""" -->
+
+<div class="container my-5">
+
+<form action="" method="post">
+  <div class="form-group row">
+    <label for="inputPlayerId" class="col-sm-2 col-form-label-lg">Player ID</label>
+    <div class="col-sm-10">
+      <input type="number" class="form-control form-control-lg" name=p_id id="inputPlayerId" placeholder="Player's ID">
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="inputTournamentId" class="col-sm-2 col-form-label-lg">Tournament ID</label>
+    <div class="col-sm-10">
+      <input type="number" class="form-control form-control-lg" name=tr_id id="inputTournamentId" placeholder="Tournament's ID">
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="inputRoleId" class="col-sm-2 col-form-label-lg">Role ID</label>
+    <div class="col-sm-10">
+      <input type="number" class="form-control form-control-lg" name=r_id id="inputRoleId" placeholder="Role ID">
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="inputLanguage" class="col-sm-2 col-form-label-lg">Language</label>
+    <div class="col-sm-10">
+      <input type="number" maxlength="2" class="form-control form-control-lg" name=lang id="inputLanguage" placeholder="Language">
+    </div>
+  </div>
+  <div class="form-group row">
+    <div class="col-sm-12 my-5">
+      <button type="submit" class="btn btn-dark btn-lg btn-block">Add</button>
+    </div>
+  </div>
+
+</form>
+
+</div>
+
+

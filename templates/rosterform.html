@@ -1,0 +1,60 @@
+
+<!--    query = """ CREATE TABLE ROSTER(
+        p_id INTEGER NOT NULL,
+        t_id INTEGER NOT NULL,
+        join_date DATE,
+        leave_date DATE,
+        position INTEGER,
+        is_captain BOOLEAN NOT NULL,
+        FOREIGN KEY(p_id) REFERENCES PLAYER(p_id) ON DELETE CASCADE,
+        FOREIGN KEY(t_id) REFERENCES TEAM(t_id) ON DELETE CASCADE
+        )""" -->
+
+<div class="container my-5">
+
+<form action="" method="post">
+  <div class="form-group row">
+    <label for="inputPlayerId" class="col-sm-2 col-form-label-lg">Player ID</label>
+    <div class="col-sm-10">
+      <input type="number" class="form-control form-control-lg" name=p_id id="inputPlayerId" placeholder="Player's ID">
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="inputTeamId" class="col-sm-2 col-form-label-lg">Team ID</label>
+    <div class="col-sm-10">
+      <input type="number" class="form-control form-control-lg" name=t_id id="inputTeamId" placeholder="Team's ID">
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="inputJoinDate" class="col-sm-2 col-form-label-lg">Join Date</label>
+    <div class="col-sm-10">
+      <input type="date" class="form-control form-control-lg" name=join_date id="inputJoinDate" placeholder="Join Date">
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="inputLeaveDate" class="col-sm-2 col-form-label-lg">Leave Date</label>
+    <div class="col-sm-10">
+      <input type="date" class="form-control form-control-lg" name=leave_date id="inputLeaveDate" placeholder="Leave Date">
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="inputPosition" class="col-sm-2 col-form-label-lg">Position</label>
+    <div class="col-sm-10">
+      <input type="number" maxlength="1" class="form-control form-control-lg" name=position id="inputPosition" placeholder="Position">
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="inputCaptain" class="col-sm-2 col-form-label-lg">Captain</label>
+    <div class="col-sm-10">
+      <input type="checkbox" class="form-control form-control-lg" name=is_captain id="inputPosition" placeholder="Is Captain">
+    </div>
+  </div>
+  <div class="form-group row">
+    <div class="col-sm-12 my-5">
+      <button type="submit" class="btn btn-dark btn-lg btn-block">Add</button>
+    </div>
+  </div>
+
+</form>
+
+</div>
