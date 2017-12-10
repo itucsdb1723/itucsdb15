@@ -242,7 +242,7 @@ def add_tournament():
 @login_required
 def add_bracket():
     if request.method == 'POST':
-        team_count = (request.form['tournament_name'],"team_count")
+        team_count = (request.form['team_count'],"team_count")
         br_type = (request.form['br_type'],"br_type")
         br_stage = (request.form['br_stage'],"br_stage")
         tr_id = (request.form['tr_id'],"tr_id")
@@ -501,7 +501,7 @@ def add_roster():
                     s += "," + var[1]
                     v += ","+"'"+var[0]+"'"
 
-        query = """INSERT INTO RESULT ({})
+        query = """INSERT INTO ROSTER ({})
         VALUES ({})""".format(s,v)
         with dbapi2.connect(app.config['dsn']) as connection:
             cursor = connection.cursor()
@@ -513,7 +513,7 @@ def add_roster():
                 pass
             else:
                 lcolor = "success"
-                ltext = "Result is added to the dotabase"
+                ltext = "Roster is added to the dotabase"
                 pass
         return Response(
                render_template('header.html', title="Admin Login") + \
