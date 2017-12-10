@@ -572,7 +572,7 @@ def home_page():
     return render_template('header.html', title="Dotabase", route="home") + \
            render_template('home.html') + \
            render_template('dividepage.html', sizes = (5,7), content=(
-           render_template('list.html', title="Top 10 Teams", route="team", items=teams, badge="DPC Points"),
+           render_template('list.html', title="Top 8 Teams", route="team", items=teams, badge="DPC Points"),
            render_template('list.html', title="Upcoming Tournaments", route="tournaments", items=tournaments, badge="")
            )) + \
            render_template('footer.html')
@@ -759,12 +759,16 @@ def tournament_profile(trname):
         cursor.execute(query2,[tournament_info[0],tournament_info[0]])
         groupMatches = cursor.fetchall()
 
-        query3 =""" SELECT team1name,TEAM.t_name as team2name,t_1_score,t_2_score,br_name,br_stage,br_index,m_index
-                        FROM ( SELECT  TEAM.t_name as team1name,t_id_2,br_name,t_1_score,t_2_score,br_stage,br_index,m_index
-                            FROM (SELECT t_id,t_id_2,br_name,t_1_score,t_2_score,br_stage,br_index,m_index
-                                    FROM MATCH LEFT JOIN BRACKET ON MATCH.br_id = BRACKET.br_id WHERE MATCH.br_id IN (SELECT  br_id FROM BRACKET WHERE BRACKET.tr_id = %s )  AND BRACKET.br_type = '1'
+        query3 =""" SELECT matches.t_id,team1name,t_id_2,TEAM.t_name as team2name,t_1_score,t_2_score,br_name,br_stage,br_index,COALESCE(m_index,0)
+                        FROM ( SELECT  matches.t_id,TEAM.t_name as team1name,t_id_2,br_name,t_1_score,t_2_score,br_stage,br_index,m_index
+                            FROM (
+                            SELECT t_id,t_id_2,br_name,t_1_score,t_2_score,br_stage,br_index,m_index
+                            FROM BRACKET
+                            LEFT JOIN MATCH
+                            ON BRACKET.br_id = MATCH.br_id
+                            WHERE BRACKET.tr_id = %s
+                            AND BRACKET.br_type = '1'
                     ) as matches LEFT JOIN TEAM ON TEAM.t_id = matches.t_id) as matches LEFT JOIN TEAM ON TEAM.t_id = matches.t_id_2 ORDER BY br_stage DESC,m_index ASC,br_index ASC"""
-
         cursor.execute(query3,[tournament_info[0]])
         playoffMatches = cursor.fetchall()
 
@@ -783,7 +787,6 @@ def tournament_profile(trname):
         cursor.execute(query5,[tournament_info[0]])
         talents = cursor.fetchall()
 
-
         talentsInfo = []
         if len(talents) > 0:
             langs = sorted({x[4] for x in talents})
@@ -798,13 +801,17 @@ def tournament_profile(trname):
                 groupMatchesInfo.append([x for x in groupMatches if x[5]==y])
 
         playoffMatchesInfo = []
+        maxMatches = 0
+        maxIndex = 0
         if len(playoffMatches) > 0:
-            stages = sorted({ x[5] for x in playoffMatches })
+            maxMatches = len(sorted({ x[9] for x in playoffMatches }))
+            maxIndex = len(sorted({ x[8] for x in playoffMatches }))
+            stages = sorted({ x[7] for x in playoffMatches }, reverse=True)
             for y in stages:
                 temp = []
-                indexes = sorted({ x[6] for x in playoffMatches if x[5] == y})
+                indexes = sorted({ x[8] for x in playoffMatches if x[7] == y})
                 for z in indexes:
-                    temp.append([x[:5] for x in playoffMatches if x[6] == z and x[5] == y])
+                    temp.append([x[:7] for x in playoffMatches if x[8] == z and x[7] == y])
                 playoffMatchesInfo.append(temp)
 
 
@@ -827,7 +834,7 @@ def tournament_profile(trname):
                render_template('teamlist.html', route="tournaments", items=participants) + \
                render_template('talents.html', route="tournaments", items=talentsInfo) + \
                render_template('groups.html', route="tournaments", items=groupMatchesInfo) + \
-               render_template('playoffs.html', route="tournaments", items=playoffMatchesInfo) + \
+               render_template('playoffs.html', route="tournaments", height=120*maxMatches, indexes=maxIndex, items=playoffMatchesInfo) + \
                render_template('footer.html', closetag=("div"))
 
 
@@ -1220,31 +1227,51 @@ def initialize_database():
         VALUES ((SELECT t_id FROM TEAM WHERE t_name LIKE '%Mineski%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Liquid%'),(SELECT br_id FROM BRACKET WHERE tr_id IN (SELECT tr_id FROM TOURNAMENT WHERE  tr_name LIKE '%Invitational Season 3%' ) AND br_type = '1' AND br_stage = 0 AND br_index = 0),5,2,1,3,0)"""
         cursor.execute(query)
 
-        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,result,t_1_score,t_2_score,m_index)
+        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,t_1_score,t_2_score,result,m_index)
         VALUES ((SELECT t_id FROM TEAM WHERE t_name LIKE '%Virtus%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Vincere%'),(SELECT br_id FROM BRACKET WHERE tr_id IN (SELECT tr_id FROM TOURNAMENT WHERE  tr_name LIKE '%DreamLeague%' ) AND br_type = '1' AND br_stage = 4 AND br_index = 0),3,2,1,1,0)"""
         cursor.execute(query)
-        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,result,t_1_score,t_2_score,m_index)
-        VALUES ((SELECT t_id FROM TEAM WHERE t_name LIKE '%Vincere%'),NULL,(SELECT br_id FROM BRACKET WHERE tr_id IN (SELECT tr_id FROM TOURNAMENT WHERE  tr_name LIKE '%DreamLeague%' ) AND br_type = '1' AND br_stage = 4 AND br_index = 1),3,1,2,2,0)"""
+        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,t_1_score,t_2_score,result,m_index)
+        VALUES (NULL,NULL,(SELECT br_id FROM BRACKET WHERE tr_id IN (SELECT tr_id FROM TOURNAMENT WHERE  tr_name LIKE '%DreamLeague%' ) AND br_type = '1' AND br_stage = 4 AND br_index = 0),3,2,0,1,1)"""
         cursor.execute(query)
-        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,result,t_1_score,t_2_score,m_index)
+        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,t_1_score,t_2_score,result,m_index)
+        VALUES (NULL,NULL,(SELECT br_id FROM BRACKET WHERE tr_id IN (SELECT tr_id FROM TOURNAMENT WHERE  tr_name LIKE '%DreamLeague%' ) AND br_type = '1' AND br_stage = 4 AND br_index = 0),3,2,0,1,2)"""
+        cursor.execute(query)
+        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,t_1_score,t_2_score,result,m_index)
+        VALUES (NULL,NULL,(SELECT br_id FROM BRACKET WHERE tr_id IN (SELECT tr_id FROM TOURNAMENT WHERE  tr_name LIKE '%DreamLeague%' ) AND br_type = '1' AND br_stage = 4 AND br_index = 0),3,2,0,1,3)"""
+        cursor.execute(query)
+
+        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,t_1_score,t_2_score,result,m_index)
+        VALUES ((SELECT t_id FROM TEAM WHERE t_name LIKE '%Vincere%'),NULL,(SELECT br_id FROM BRACKET WHERE tr_id IN (SELECT tr_id FROM TOURNAMENT WHERE  tr_name LIKE '%DreamLeague%' ) AND br_type = '1' AND br_stage = 4 AND br_index = 1),3,2,1,2,0)"""
+        cursor.execute(query)
+        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,t_1_score,t_2_score,result,m_index)
+        VALUES (NULL,NULL,(SELECT br_id FROM BRACKET WHERE tr_id IN (SELECT tr_id FROM TOURNAMENT WHERE  tr_name LIKE '%DreamLeague%' ) AND br_type = '1' AND br_stage = 4 AND br_index = 1),3,2,0,2,1)"""
+        cursor.execute(query)
+
+        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,t_1_score,t_2_score,result,m_index)
         VALUES ((SELECT t_id FROM TEAM WHERE t_name LIKE '%Virtus%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Liquid%'),(SELECT br_id FROM BRACKET WHERE tr_id IN (SELECT tr_id FROM TOURNAMENT WHERE  tr_name LIKE '%DreamLeague%' ) AND br_type = '1' AND br_stage = 3 AND br_index = 0),3,1,2,2,0)"""
         cursor.execute(query)
-        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,result,t_1_score,t_2_score,m_index)
+        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,t_1_score,t_2_score,result,m_index)
+        VALUES (NULL,NULL,(SELECT br_id FROM BRACKET WHERE tr_id IN (SELECT tr_id FROM TOURNAMENT WHERE  tr_name LIKE '%DreamLeague%' ) AND br_type = '1' AND br_stage = 3 AND br_index = 0),3,2,0,2,1)"""
+        cursor.execute(query)
+
+        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,t_1_score,t_2_score,result,m_index)
         VALUES ((SELECT t_id FROM TEAM WHERE t_name LIKE '%Newbee%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Vincere%'),(SELECT br_id FROM BRACKET WHERE tr_id IN (SELECT tr_id FROM TOURNAMENT WHERE  tr_name LIKE '%DreamLeague%' ) AND br_type = '1' AND br_stage = 3 AND br_index = 1),3,1,2,1,0)"""
         cursor.execute(query)
-        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,result,t_1_score,t_2_score,m_index)
-        VALUES (NULL,NULL,(SELECT br_id FROM BRACKET WHERE tr_id IN (SELECT tr_id FROM TOURNAMENT WHERE  tr_name LIKE '%DreamLeague%' ) AND br_type = '1' AND br_stage = 2 AND br_index = 0),0,0,0,0,0)"""
+        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,t_1_score,t_2_score,result,m_index)
+        VALUES (NULL,NULL,(SELECT br_id FROM BRACKET WHERE tr_id IN (SELECT tr_id FROM TOURNAMENT WHERE  tr_name LIKE '%DreamLeague%' ) AND br_type = '1' AND br_stage = 3 AND br_index = 1),3,0,2,1,1)"""
         cursor.execute(query)
-        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,result,t_1_score,t_2_score,m_index)
+
+
+        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,t_1_score,t_2_score,result,m_index)
         VALUES ((SELECT t_id FROM TEAM WHERE t_name LIKE '%Vincere%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Evil G%'),(SELECT br_id FROM BRACKET WHERE tr_id IN (SELECT tr_id FROM TOURNAMENT WHERE  tr_name LIKE '%DreamLeague%' ) AND br_type = '1' AND br_stage = 2 AND br_index = 1),3,0,2,2,0)"""
         cursor.execute(query)
-        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,result,t_1_score,t_2_score,m_index)
+        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,t_1_score,t_2_score,result,m_index)
         VALUES ((SELECT t_id FROM TEAM WHERE t_name LIKE '%Liquid%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Secret%'),(SELECT br_id FROM BRACKET WHERE tr_id IN (SELECT tr_id FROM TOURNAMENT WHERE  tr_name LIKE '%DreamLeague%' ) AND br_type = '1' AND br_stage = 1 AND br_index = 0),3,1,2,1,0)"""
         cursor.execute(query)
-        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,result,t_1_score,t_2_score,m_index)
+        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,t_1_score,t_2_score,result,m_index)
         VALUES ((SELECT t_id FROM TEAM WHERE t_name LIKE '%Liquid%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Evil G%'),(SELECT br_id FROM BRACKET WHERE tr_id IN (SELECT tr_id FROM TOURNAMENT WHERE  tr_name LIKE '%DreamLeague%' ) AND br_type = '1' AND br_stage = 1 AND br_index = 1),3,2,0,1,0)"""
         cursor.execute(query)
-        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,result,t_1_score,t_2_score,m_index)
+        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,t_1_score,t_2_score,result,m_index)
         VALUES ((SELECT t_id FROM TEAM WHERE t_name LIKE '%Secret%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Liquid%'),(SELECT br_id FROM BRACKET WHERE tr_id IN (SELECT tr_id FROM TOURNAMENT WHERE  tr_name LIKE '%DreamLeague%' ) AND br_type = '1' AND br_stage = 0 AND br_index = 0),5,3,0,1,0)"""
         cursor.execute(query)
 

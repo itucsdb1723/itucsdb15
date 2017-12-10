@@ -1,1 +1,42 @@
-{{items}}
+{% if items|length > 0  %}
+<div class="h2 mb-3 pl-1 text-wlight">Playoffs</div>
+<hr/>
+<div class="row">
+  {% for item in  items%}
+  <div class="col">
+    {% for itemx in  item%}
+    <div class="row">
+      <div class="col">
+      <div class="row m-auto {{'bg-dark' if itemx[0][6]|length>0 else 'bg-light'}} text-white" style="height:{{(indexes/item|length)*30}}px;"><div class="w-100 text-center" style="line-height:{{(indexes/item|length)*30}}px;">{{itemx[0][6]}}</div></div>
+      {% for itemy in  itemx%}
+      <div class="row m-auto" style="height:{{(indexes/item|length)*(height/itemx|length)}}px;align-items:center">
+      {% if itemy[6]|length>0 %}
+      <table class="table table-bordered m-0 bg-white teams">
+      <tr>
+        <td {{'teamID='+itemy[0]|string+'' if itemy[1] is not none}} width="80%">{{ 'TBD' if itemy[1] is none else itemy[1] }}</td>
+        <td {{'teamID='+itemy[0]|string+'' if itemy[1] is not none}} class="text-center">{{itemy[4]}}</td>
+      </tr>
+      <tr>
+        <td {{'teamID='+itemy[2]|string+'' if itemy[3] is not none}} width="80%">{{ 'TBD' if itemy[3] is none else itemy[3] }}</td>
+        <td {{'teamID='+itemy[2]|string+'' if itemy[3] is not none}} class="text-center team">{{itemy[5]}}</td>
+      </tr>
+      </table>
+      {% endif %}
+      </div>
+      {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<script>
+$("td[teamID]").click(
+function() {
+  $("td[teamID]").removeClass("bg-info text-white font-weight-bold");
+  $("td[teamID="+$(this).attr("teamID")+"]").toggleClass("bg-info text-white font-weight-bold");
+}
+);
+</script>
