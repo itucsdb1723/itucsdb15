@@ -1,22 +1,17 @@
-
 {% if items|length > 0  %}
   <div class="h2 mb-3 pl-1 text-wlight">Talent</div>
   <hr/>
-  <div class="row m-auto" >
+  <div class="row" >
     {% for itemx in items%}
-      <div class="col-lg-{{12 // items|length}}" style="height:100%">
+      <div class="col-{{12 // items|length}}" style="width:inherit">
       {% for itemz in itemx%}
         {% if itemz|length > 0 %}
-          <div class="row m-auto" >
-            <div class="card mb-3 p-3" style="height:inherit">
+            <div class="card mb-3 p-3">
               <div class="h3 mb-2 text-wlight">{{ itemz[0][0] }}</div>
-              {% for item in  itemz %}
-                <div class="row m-auto">
-                  <div class="col">{{item[2]}} <b>"<a class="text-dark" href="../player/{{item[1]}}">{{item[1]}}</a>"</b> {{item[3]}} </div>
-                </div>
+              {% for item in itemz %}
+                <p class="m-0">{{item[2]}} <b>"<a class="text-dark" href="../player/{{item[1]}}">{{item[1]}}</a>"</b> {{item[3]}}</p>
               {% endfor %}
             </div>
-          </div>
         {% endif %}
       {% endfor %}
       </div>
