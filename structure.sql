@@ -25,9 +25,7 @@ CREATE TABLE PLAYER (
       p_surname VARCHAR(60),
       p_country VARCHAR(2),
       p_birth DATE,
-      t_id INTEGER,
-      p_mmr INTEGER,
-      FOREIGN KEY(t_id) REFERENCES TEAM(t_id) ON DELETE CASCADE
+      p_mmr INTEGER
   );
 CREATE TABLE TOURNAMENT (
       tr_id SERIAL PRIMARY KEY,

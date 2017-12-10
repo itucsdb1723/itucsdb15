@@ -564,7 +564,7 @@ def home_page():
                 ORDER BY (dpc_points IS NULL),dpc_points DESC
                 LIMIT 8
             """
-    tr_query = """ SELECT tr_name,tr_date FROM TOURNAMENT WHERE tr_date>=%s ORDER BY tr_date DESC LIMIT 8"""
+    tr_query = """ SELECT tr_name,tr_date FROM TOURNAMENT WHERE tr_date>=%s ORDER BY tr_date ASC LIMIT 8"""
     with dbapi2.connect(app.config['dsn']) as connection:
         cursor = connection.cursor()
         cursor.execute(t_query)
@@ -585,7 +585,7 @@ def player_profile(nick):
     today=date.today()
     with dbapi2.connect(app.config['dsn']) as connection:
         cursor = connection.cursor()
-        query = """ SELECT * FROM PLAYER LEFT JOIN (SELECT t_id,t_name FROM TEAM) AS TEAM ON PLAYER.t_id=TEAM.t_id WHERE p_nick=%s """
+        query = """SELECT * FROM (SELECT * FROM PLAYER WHERE p_nick=%s) AS PLAYER LEFT JOIN (SELECT ID.p_id,ID.t_id,TEAM.t_name FROM (SELECT p_id,t_id FROM ROSTER WHERE leave_date IS NULL) AS ID LEFT JOIN TEAM ON ID.t_id=TEAM.t_id) AS TEAM ON PLAYER.p_id = TEAM.p_id"""
         cursor.execute(query,[nick])
         player_info = cursor.fetchall()[0]
         query2 = """ SELECT t_name,join_date,leave_date,position,is_captain FROM ROSTER JOIN TEAM ON ROSTER.t_id=TEAM.t_id WHERE p_id=%s ORDER BY join_date ASC"""
@@ -614,7 +614,7 @@ def player_profile(nick):
                     ) AS ranks
                     WHERE t_id=%s
                     """
-        cursor.execute(query4,[player_info[7]])
+        cursor.execute(query4,[player_info[9]])
         teamrank = cursor.fetchall()
         query5 = """ SELECT tr_name, tr_enddate, placement, dpc_points, prize
                     FROM RESULT LEFT JOIN TOURNAMENT ON RESULT.tr_id=TOURNAMENT.tr_id
@@ -635,8 +635,8 @@ def player_profile(nick):
         info.append(('Age',today.year - player_info[6].year - ((today.month, today.day) < (player_info[6].month, player_info[6].day))))
     if player_info[10]!=None:
         info.append(('Team',player_info[10]))
-    if player_info[8]!=None:
-        info.append(('Solo MMR',player_info[8]))
+    if player_info[7]!=None:
+        info.append(('Solo MMR',player_info[7]))
     if len(teamrank)>0:
         teamrank=teamrank[0][0]
     else:
