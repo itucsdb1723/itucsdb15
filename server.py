@@ -17,6 +17,8 @@ countrieslist = """{"BD": "Bangladesh", "BE": "Belgium", "BF": "Burkina Faso", "
 
 countries = json.loads(countrieslist)
 
+teamRegionList = (("NA","North America"),("SA","South America"),("EU","Europe"),("CIS","CIS"),("CN","China"),("SEA","Southeast Asia"))
+
 app = Flask(__name__)
 
 #LOGIN
@@ -685,9 +687,9 @@ def team_profile(tname):
         if team_info[1]!=None:
             info.append(('Team Name',team_info[1]))
         if team_info[2]!=None:
-            info.append(('Team Tag',team_info[2]))
+            info.append(('Tag',team_info[2]))
         if team_info[3]!=None:
-            info.append(('Team Region',team_info[3]))
+            info.append(('Region',teamRegionList[team_info[3]][1]))
         if team_info[4]!=None:
             info.append(('Created',team_info[4]))
         rosterTitles= ['Player','Join Date','Leave Date','Position','Captain']
@@ -791,8 +793,14 @@ def tournament_profile(trname):
         if len(talents) > 0:
             langs = sorted({x[4] for x in talents})
             for y in langs:
-                roles = sorted({x[4] for x in talents})
-                talentsInfo.append([x for x in talents if x[4] == y])
+                tempTalent = []
+                roles = []
+                for x in talents:
+                    if x[0] not in roles:
+                        roles.append(x[0])
+                for z in roles:
+                    tempTalent.append([x for x in talents if x[0] == z and x[4] == y])
+                talentsInfo.append(tempTalent)
 
         groupMatchesInfo = []
         if len(groupMatches) > 0:
@@ -808,11 +816,11 @@ def tournament_profile(trname):
             maxIndex = len(sorted({ x[8] for x in playoffMatches }))
             stages = sorted({ x[7] for x in playoffMatches }, reverse=True)
             for y in stages:
-                temp = []
+                tempStage = []
                 indexes = sorted({ x[8] for x in playoffMatches if x[7] == y})
                 for z in indexes:
-                    temp.append([x[:7] for x in playoffMatches if x[8] == z and x[7] == y])
-                playoffMatchesInfo.append(temp)
+                    tempStage.append([x[:7] for x in playoffMatches if x[8] == z and x[7] == y])
+                playoffMatchesInfo.append(tempStage)
 
 
         info = []
@@ -909,7 +917,7 @@ def initialize_database():
         t_id SERIAL PRIMARY KEY,
         t_name VARCHAR(60),
         t_tag VARCHAR(10),
-        t_region INTEGER,
+        t_region SMALLINT,
         t_created DATE
         )"""
         cursor.execute(query)
@@ -1087,7 +1095,7 @@ def initialize_database():
         VALUES((SELECT p_id from PLAYER WHERE p_nick = 'Blitz'),
                (SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Invitational Season 3%'),
                (SELECT rl_id FROM ROLE WHERE role = 'Commentator'),
-               'EN')"""
+               'RU')"""
         cursor.execute(query)
         query = """INSERT INTO TALENT(p_id ,tr_id,rl_id,lang)
         VALUES((SELECT p_id from PLAYER WHERE p_nick = 'GoDz'),
@@ -1152,25 +1160,25 @@ def initialize_database():
         cursor.execute(query)
 
         query = """INSERT INTO TEAM (t_name,t_tag,t_region,t_created)
-        VALUES ('Evil Geniuses','EG',1,'2011-10-24')"""
+        VALUES ('Evil Geniuses','EG',0,'2011-10-24')"""
         cursor.execute(query)
         query = """INSERT INTO TEAM (t_name,t_tag,t_region,t_created)
-        VALUES ('compLexity Gaming','coL',1,'2012-02-16')"""
+        VALUES ('compLexity Gaming','coL',0,'2012-02-16')"""
         cursor.execute(query)
         query = """INSERT INTO TEAM (t_name,t_tag,t_region,t_created)
-        VALUES ('Immortals','IMT',1,'2017-09-13')"""
+        VALUES ('Immortals','IMT',0,'2017-09-13')"""
         cursor.execute(query)
         query = """INSERT INTO TEAM (t_name,t_tag,t_region)
         VALUES ('Mineski','Mski',5)"""
         cursor.execute(query)
         query = """INSERT INTO TEAM (t_name,t_tag,t_region,t_created)
-        VALUES ('Team Liquid','Liquid',3,'2012-12-06')"""
+        VALUES ('Team Liquid','Liquid',2,'2012-12-06')"""
         cursor.execute(query)
         query = """INSERT INTO TEAM (t_name,t_tag,t_region,t_created)
-        VALUES ('Virtus.pro','VP',2,'2003-01-01')"""
+        VALUES ('Virtus.pro','VP',3,'2003-01-01')"""
         cursor.execute(query)
         query = """INSERT INTO TEAM (t_name,t_tag,t_region,t_created)
-        VALUES ('Team Secret','Secret',3,'2014-08-27')"""
+        VALUES ('Team Secret','Secret',2,'2014-08-27')"""
         cursor.execute(query)
         query = """INSERT INTO TEAM (t_name,t_tag,t_region,t_created)
         VALUES ('Newbee','Newbee',4,'2014-02-13')"""
@@ -1182,7 +1190,7 @@ def initialize_database():
         VALUES ('LGD Gaming','LGD',4,'2009-01-01')"""
         cursor.execute(query)
         query = """INSERT INTO TEAM (t_name,t_tag,t_region,t_created)
-        VALUES ('Natus Vincere','NAVI',2,'2010-10-22')"""
+        VALUES ('Natus Vincere','NAVI',3,'2010-10-22')"""
         cursor.execute(query)
 
         query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,result,t_1_score,t_2_score)
