@@ -17,6 +17,8 @@ countrieslist = """{"BD": "Bangladesh", "BE": "Belgium", "BF": "Burkina Faso", "
 
 countries = json.loads(countrieslist)
 
+teamRegionList = (("NA","North America"),("SA","South America"),("EU","Europe"),("CIS","CIS"),("CN","China"),("SEA","Southeast Asia"))
+
 app = Flask(__name__)
 
 #LOGIN
@@ -475,7 +477,7 @@ def add_result():
                render_template('header.html', title="Admin Login") + \
                render_template('bracketform.html') + \
                render_template('footer.html')
-               )        
+               )
 
 @app.route("/add_roster", methods=["GET", "POST"])
 @login_required
@@ -526,13 +528,43 @@ def add_roster():
                render_template('footer.html')
                )
 
-        
+
 
 @app.route('/home')
 @app.route('/')
 def home_page():
+    t_query = """ SELECT t_name,dpc_points
+                FROM(
+                    SELECT t_id, sum(dpc_points) as dpc_points
+                    FROM (
+                        SELECT ROW_NUMBER() OVER (PARTITION BY t_id ORDER BY dpc_points DESC) AS rowNumber, result.*
+                        FROM (
+                            SELECT p_id, max(t_id) as t_id, SUM(dpc_points) AS dpc_points
+                            FROM RESULT
+                            GROUP BY p_id
+                            ) AS result
+                        ) AS RESULTS
+                    WHERE results.rowNumber<=3
+                    GROUP BY t_id
+                    ) AS POINTS
+                RIGHT JOIN TEAM
+                ON POINTS.t_id = TEAM.t_id
+                ORDER BY (dpc_points IS NULL),dpc_points DESC
+                LIMIT 8
+            """
+    tr_query = """ SELECT tr_name,tr_date FROM TOURNAMENT WHERE tr_date>=%s ORDER BY tr_date ASC LIMIT 8"""
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor = connection.cursor()
+        cursor.execute(t_query)
+        teams = cursor.fetchall()
+        cursor.execute(tr_query,[date.today()])
+        tournaments = cursor.fetchall()
     return render_template('header.html', title="Dotabase", route="home") + \
            render_template('home.html') + \
+           render_template('dividepage.html', sizes = (5,7), content=(
+           render_template('list.html', title="Top 8 Teams", route="team", items=teams, badge="DPC Points"),
+           render_template('list.html', title="Upcoming Tournaments", route="tournaments", items=tournaments, badge="")
+           )) + \
            render_template('footer.html')
 
 
@@ -541,7 +573,7 @@ def player_profile(nick):
     today=date.today()
     with dbapi2.connect(app.config['dsn']) as connection:
         cursor = connection.cursor()
-        query = """ SELECT * FROM PLAYER LEFT JOIN (SELECT t_id,t_name FROM TEAM) AS TEAM ON PLAYER.t_id=TEAM.t_id WHERE p_nick=%s """
+        query = """SELECT * FROM (SELECT * FROM PLAYER WHERE p_nick=%s) AS PLAYER LEFT JOIN (SELECT ID.p_id,ID.t_id,TEAM.t_name FROM (SELECT p_id,t_id FROM ROSTER WHERE leave_date IS NULL) AS ID LEFT JOIN TEAM ON ID.t_id=TEAM.t_id) AS TEAM ON PLAYER.p_id = TEAM.p_id"""
         cursor.execute(query,[nick])
         player_info = cursor.fetchall()[0]
         query2 = """ SELECT t_name,join_date,leave_date,position,is_captain FROM ROSTER JOIN TEAM ON ROSTER.t_id=TEAM.t_id WHERE p_id=%s ORDER BY join_date ASC"""
@@ -570,7 +602,7 @@ def player_profile(nick):
                     ) AS ranks
                     WHERE t_id=%s
                     """
-        cursor.execute(query4,[player_info[7]])
+        cursor.execute(query4,[player_info[9]])
         teamrank = cursor.fetchall()
         query5 = """ SELECT tr_name, tr_enddate, placement, dpc_points, prize
                     FROM RESULT LEFT JOIN TOURNAMENT ON RESULT.tr_id=TOURNAMENT.tr_id
@@ -591,8 +623,8 @@ def player_profile(nick):
         info.append(('Age',today.year - player_info[6].year - ((today.month, today.day) < (player_info[6].month, player_info[6].day))))
     if player_info[10]!=None:
         info.append(('Team',player_info[10]))
-    if player_info[8]!=None:
-        info.append(('Solo MMR',player_info[8]))
+    if player_info[7]!=None:
+        info.append(('Solo MMR',player_info[7]))
     if len(teamrank)>0:
         teamrank=teamrank[0][0]
     else:
@@ -610,7 +642,7 @@ def player_profile(nick):
            render_template('stats.html', stats=stats) + \
            render_template('listcard.html', mainTitle='Results',items=resultlist,titles=resultTitles,colSizes=resultColArray) + \
            render_template('listcard.html', mainTitle='Team History',items=history,titles=historyTitles,colSizes=historyColArray) + \
-           render_template('footer.html')
+           render_template('footer.html', closetag=("div","div"))
 
 @app.route('/player')
 def players_page():
@@ -643,9 +675,9 @@ def team_profile(tname):
         if team_info[1]!=None:
             info.append(('Team Name',team_info[1]))
         if team_info[2]!=None:
-            info.append(('Team Tag',team_info[2]))
+            info.append(('Tag',team_info[2]))
         if team_info[3]!=None:
-            info.append(('Team Region',team_info[3]))
+            info.append(('Region',teamRegionList[team_info[3]][1]))
         if team_info[4]!=None:
             info.append(('Created',team_info[4]))
         rosterTitles= ['Player','Join Date','Leave Date','Position','Captain']
@@ -656,7 +688,7 @@ def team_profile(tname):
                render_template('profile.html', name=team_info[1], info=info, ) + \
                render_template('listcard.html', mainTitle='Roster', items=rosterList, titles=rosterTitles, colSizes=rosterColArray) + \
                render_template('listcard.html', mainTitle='Result', items=resultList, titles=resultTitles, colSizes=resultColArray) + \
-               render_template('footer.html')
+               render_template('footer.html', closetag=("div","div"))
 
 @app.route('/team')
 def teams_page():
@@ -698,9 +730,11 @@ def teams_page():
 def tournament_profile(trname):
     with dbapi2.connect(app.config['dsn']) as connection:
         cursor = connection.cursor()
+
         query = """ SELECT * FROM TOURNAMENT WHERE tr_name=%s"""
         cursor.execute(query,[trname])
         tournament_info = cursor.fetchone()
+
         query2 ="""SELECT *
                         FROM (SELECT TEAM.t_name,SUM(won_mathces) AS winScoreTotal,SUM(lose_mathces) AS loseScoreTotal,SUM(team_won) AS teamWonTotal ,SUM(team_lose) AS teamLoseTotal,br_stage
                                 FROM(
@@ -714,9 +748,20 @@ def tournament_profile(trname):
                 """
         cursor.execute(query2,[tournament_info[0],tournament_info[0]])
         groupMatches = cursor.fetchall()
-        query3 ="""SELECT t_id,t_id_2,m_type,result,t_1_score,t_2_score,br_stage,BRACKET.br_id FROM MATCH LEFT JOIN BRACKET ON MATCH.br_id = BRACKET.br_id WHERE MATCH.br_id IN (SELECT  br_id FROM BRACKET WHERE BRACKET.tr_id = %s )  AND BRACKET.br_type = '1' ORDER BY br_id,br_stage ASC"""
+
+        query3 =""" SELECT matches.t_id,team1name,t_id_2,TEAM.t_name as team2name,t_1_score,t_2_score,br_name,br_stage,br_index,COALESCE(m_index,0)
+                        FROM ( SELECT  matches.t_id,TEAM.t_name as team1name,t_id_2,br_name,t_1_score,t_2_score,br_stage,br_index,m_index
+                            FROM (
+                            SELECT t_id,t_id_2,br_name,t_1_score,t_2_score,br_stage,br_index,m_index
+                            FROM BRACKET
+                            LEFT JOIN MATCH
+                            ON BRACKET.br_id = MATCH.br_id
+                            WHERE BRACKET.tr_id = %s
+                            AND BRACKET.br_type = '1'
+                    ) as matches LEFT JOIN TEAM ON TEAM.t_id = matches.t_id) as matches LEFT JOIN TEAM ON TEAM.t_id = matches.t_id_2 ORDER BY br_stage DESC,m_index ASC,br_index ASC"""
         cursor.execute(query3,[tournament_info[0]])
         playoffMatches = cursor.fetchall()
+
         query4= """ SELECT teamTable.teamName,TOURNAMENT.tr_name
                         FROM(
                             SELECT qualifier_id,TEAM.t_name as teamName
@@ -728,41 +773,42 @@ def tournament_profile(trname):
         query5 = """SELECT role,p_nick,p_name,p_surname,lang,priority
                         FROM (SELECT p_id,lang,role,priority
                                 FROM TALENT LEFT JOIN ROLE ON ROLE.rl_id = TALENT.rl_id WHERE TALENT.tr_id = %s
-                                ) AS talents LEFT JOIN PLAYER ON PLAYER.p_id = talents.p_id  ORDER BY lang,priority ASC"""
+                                ) AS talents LEFT JOIN PLAYER ON PLAYER.p_id = talents.p_id  ORDER BY lang ASC, priority ASC"""
         cursor.execute(query5,[tournament_info[0]])
         talents = cursor.fetchall()
-        langNumber = len({x[4] for x in talents})
-        roleNumber = len({x[0] for x in talents})
-        talentsInfo = [[[] for y in range(roleNumber)] for x in range(langNumber)]
-        langNoCurrent = 0
-        roleNoCurrent = 0
-        x = 0
-        while x < len(talents):
-            curRole = talents[x][0]
-            curLang = talents[x][4]
-            while x < len(talents) and curLang == talents[x][4]:
-                if curRole != talents[x][0]:
-                    curRole = talents[x][0]
-                    roleNoCurrent += 1
-                talentsInfo[langNoCurrent][roleNoCurrent].append(talents[x])
-                x += 1
-            langNoCurrent += 1
 
+        talentsInfo = []
+        if len(talents) > 0:
+            langs = sorted({x[4] for x in talents})
+            for y in langs:
+                tempTalent = []
+                roles = []
+                for x in talents:
+                    if x[0] not in roles:
+                        roles.append(x[0])
+                for z in roles:
+                    tempTalent.append([x for x in talents if x[0] == z and x[4] == y])
+                talentsInfo.append(tempTalent)
 
+        groupMatchesInfo = []
+        if len(groupMatches) > 0:
+            groups = sorted({x[5] for x in groupMatches })
+            for y in groups:
+                groupMatchesInfo.append([x for x in groupMatches if x[5]==y])
 
-        #CLEAN THIS
-        groupNumber = len({x[5] for x in groupMatches })
-        groupMatchesInfo = [[] for x in range(groupNumber)]
-        curStage = groupMatches[0][5]
-        for x in range(len(groupMatches)):  #Gives the number of groups
-            if curStage != groupMatches[x][5]:
-                curStage = groupMatches[x][5]
-            groupMatchesInfo[curStage].append(groupMatches[x])
-
+        playoffMatchesInfo = []
+        maxMatches = 0
+        maxIndex = 0
         if len(playoffMatches) > 0:
-            render_playoffs = 0
-        else:
-            render_playoffs = 1
+            maxMatches = len(sorted({ x[9] for x in playoffMatches }))
+            maxIndex = len(sorted({ x[8] for x in playoffMatches }))
+            stages = sorted({ x[7] for x in playoffMatches }, reverse=True)
+            for y in stages:
+                tempStage = []
+                indexes = sorted({ x[8] for x in playoffMatches if x[7] == y})
+                for z in indexes:
+                    tempStage.append([x[:7] for x in playoffMatches if x[8] == z and x[7] == y])
+                playoffMatchesInfo.append(tempStage)
 
 
         info = []
@@ -783,16 +829,10 @@ def tournament_profile(trname):
                render_template('tournamentprofile.html', name=tournament_info[1], info=info, )  + \
                render_template('teamlist.html', route="tournaments", items=participants) + \
                render_template('talents.html', route="tournaments", items=talentsInfo) + \
-               render_template('groups.html', route="tournaments", title = groupNumber,items=groupMatchesInfo) + \
-               render_template('playoffs.html', route="tournaments", items=playoffMatches, render=render_playoffs) + \
-               render_template('footer.html')
+               render_template('groups.html', route="tournaments", items=groupMatchesInfo) + \
+               render_template('playoffs.html', route="tournaments", height=120*maxMatches, indexes=maxIndex, items=playoffMatchesInfo) + \
+               render_template('footer.html', closetag=("div"))
 
-        #TO DO: FIND BRACKET TYPES -> IF EXIST DRAW & DO PROPER THINGS FOR EACH BRACKET TYPE.
-        #GROUPS -> DRAW TABLE ACCORDING TO WIN-LOSS NUMBERS
-        #PLAYOFFS ->DRAW BRACKET GRAPH.(LAST 16, SEMI, FINAL ETC).
-        #CREATE GROUP AND PLAYOFF TEMPLATE.
-        #ALSO MATCH INFO CAN BE ADDED WHEN HOVERED OVER TEAM'S NAME.
-        #ALSO MATCH PAGES CAN BE ADDED ACCORDING TO MATCH ID'S
 
 @app.route('/tournaments')
 def tournaments_page():
@@ -840,510 +880,15 @@ def jsonteam(name):
 def initialize_database():
     with dbapi2.connect(app.config['dsn']) as connection:
         cursor = connection.cursor()
-
-        query = """DROP TABLE IF EXISTS ROSTER CASCADE"""
-        cursor.execute(query)
-        query = """DROP TABLE IF EXISTS TEAM CASCADE"""
-        cursor.execute(query)
-        query = """DROP TABLE IF EXISTS PLAYER CASCADE"""
-        cursor.execute(query)
-        query = """DROP TABLE IF EXISTS TOURNAMENT CASCADE"""
-        cursor.execute(query)
-        query = """DROP TABLE IF EXISTS RESULT CASCADE"""
-        cursor.execute(query)
-        query = """DROP TABLE IF EXISTS BRACKET CASCADE"""
-        cursor.execute(query)
-        query = """DROP TABLE IF EXISTS PARTICIPANT CASCADE"""
-        cursor.execute(query)
-        query = """DROP TABLE IF EXISTS MATCH CASCADE"""
-        cursor.execute(query)
-        query = """DROP TABLE IF EXISTS ROLE CASCADE"""
-        cursor.execute(query)
-        query = """DROP TABLE IF EXISTS TALENT CASCADE"""
-        cursor.execute(query)
-        query = """ CREATE TABLE TEAM(
-        t_id SERIAL PRIMARY KEY,
-        t_name VARCHAR(60),
-        t_tag VARCHAR(10),
-        t_region INTEGER,
-        t_created DATE
-        )"""
-        cursor.execute(query)
-
-        query = """CREATE TABLE PLAYER (
-        p_id SERIAL PRIMARY KEY,
-        p_accountid INTEGER UNIQUE,
-        p_nick VARCHAR(20) NOT NULL UNIQUE,
-        p_name VARCHAR(60),
-        p_surname VARCHAR(60),
-        p_country VARCHAR(2),
-        p_birth DATE,
-        t_id INTEGER,
-        p_mmr INTEGER,
-        FOREIGN KEY(t_id) REFERENCES TEAM(t_id) ON DELETE CASCADE
-        )"""
-        cursor.execute(query)
-
-        query = """CREATE TABLE TOURNAMENT (
-        tr_id SERIAL PRIMARY KEY,
-        tr_name VARCHAR(60) NOT NULL,
-        tr_date DATE,
-        tr_enddate DATE,
-        parent_tr_id INTEGER,
-        FOREIGN KEY(parent_tr_id) REFERENCES TOURNAMENT(tr_id) ON DELETE CASCADE
-        )"""
-        cursor.execute(query)
-        #br_type = 0 group, 1 playoff
-        #If br_stage = 0  means final ,1 means semi and  so on.
-        query = """ CREATE TABLE BRACKET(
-        br_id SERIAL PRIMARY KEY,
-        team_count INTEGER,
-        br_type BOOLEAN,
-        br_stage SMALLINT,
-        tr_id INTEGER,
-        br_name VARCHAR(60) NOT NULL,
-        FOREIGN KEY(tr_id) REFERENCES TOURNAMENT(tr_id) ON DELETE CASCADE
-        )"""
-
-        cursor.execute(query)
-
-        query = """ CREATE TABLE PARTICIPANT(
-        tr_id INTEGER,
-        t_id INTEGER,
-        qualifier_id INTEGER,
-        FOREIGN KEY(tr_id) REFERENCES TOURNAMENT(tr_id) ON DELETE CASCADE,
-        FOREIGN KEY(t_id) REFERENCES TEAM(t_id) ON DELETE CASCADE,
-        FOREIGN KEY(qualifier_id) REFERENCES TOURNAMENT(tr_id) ON DELETE CASCADE
-        )"""
-
-        cursor.execute(query)
-
-        query = """ CREATE TABLE MATCH(
-        m_id SERIAL PRIMARY KEY,
-        t_id INTEGER,
-        t_id_2 INTEGER,
-        br_id INTEGER,
-        m_type SMALLINT,
-        result SMALLINT,
-        t_1_score SMALLINT,
-        t_2_score SMALLINT,
-        FOREIGN KEY (t_id)  REFERENCES TEAM(t_id) ON DELETE CASCADE,
-        FOREIGN KEY(t_id_2) REFERENCES TEAM(t_id) ON DELETE CASCADE,
-        FOREIGN KEY(br_id) REFERENCES BRACKET(br_id) ON DELETE CASCADE
-        )"""
-        cursor.execute(query)
-        query = """ CREATE TABLE ROLE(
-        rl_id SERIAL PRIMARY KEY,
-        role VARCHAR(60),
-        priority SMALLINT
-        )"""
-        cursor.execute(query)
-        query = """INSERT INTO ROLE (role,priority)
-        VALUES ('Host',1)"""
-        cursor.execute(query)
-        query = """INSERT INTO ROLE (role,priority)
-        VALUES ('Co-Host',2)"""
-        cursor.execute(query)
-        query = """INSERT INTO ROLE (role,priority)
-        VALUES ('Analyst',3)"""
-        cursor.execute(query)
-        query = """INSERT INTO ROLE (role,priority)
-        VALUES ('Commentator',3)"""
-        cursor.execute(query)
-        query = """INSERT INTO ROLE (role,priority)
-        VALUES ('Observer',4)"""
-        cursor.execute(query)
-        query = """INSERT INTO ROLE (role,priority)
-        VALUES ('Interviewer',4)"""
-        cursor.execute(query)
-        query = """INSERT INTO ROLE (role,priority)
-        VALUES ('Content Creator',5)"""
-        cursor.execute(query)
-        query = """INSERT INTO ROLE (role,priority)
-        VALUES ('Newbie Stream',5)"""
-        cursor.execute(query)
-        query = """INSERT INTO ROLE (role,priority)
-        VALUES ('Interpreter',5)"""
-        cursor.execute(query)
-        query = """INSERT INTO ROLE (role,priority)
-        VALUES ('Statistician',5)"""
-        cursor.execute(query)
-
-        query = """ CREATE TABLE TALENT(
-        p_id INTEGER,
-        tr_id INTEGER,
-        rl_id INTEGER,
-        lang VARCHAR(2),
-        FOREIGN KEY (p_id)  REFERENCES PLAYER(p_id) ON DELETE CASCADE,
-        FOREIGN KEY(tr_id) REFERENCES TOURNAMENT(tr_id) ON DELETE CASCADE,
-        FOREIGN KEY(rl_id) REFERENCES ROLE(rl_id) ON DELETE CASCADE
-        )"""
-        cursor.execute(query)
-
-        query = """INSERT INTO TOURNAMENT (tr_name,tr_date,tr_enddate)
-        VALUES ('SL i-League Invitational Season 3','2017-10-12','2017-10-15')"""
-        cursor.execute(query)
-        query = """INSERT INTO TOURNAMENT (tr_name,tr_date,tr_enddate)
-        VALUES ('PGL Open Bucharest','2017-10-19','2017-10-22')"""
-        cursor.execute(query)
-        query = """INSERT INTO TOURNAMENT (tr_name,tr_date,tr_enddate)
-        VALUES ('ESL One Hamburg 2017','2017-10-26','2017-10-29')"""
-        cursor.execute(query)
-        query = """INSERT INTO TOURNAMENT (tr_name,tr_date,tr_enddate)
-        VALUES ('AMD SAPPHIRE Dota PIT League','2017-11-02','2017-11-05')"""
-        cursor.execute(query)
-
-        query = """INSERT INTO PLAYER (p_nick,p_name,p_surname,p_country) VALUES ('Sheever','Jorien','van der Heijden','NL')"""
-        cursor.execute(query)
-        query = """INSERT INTO PLAYER (p_nick,p_name,p_surname,p_country) VALUES ('Fogged','Ioannis ','Loucas','US')"""
-        cursor.execute(query)
-        query = """INSERT INTO PLAYER (p_nick,p_name,p_surname,p_country) VALUES ('Capitalist','Austin ','Walsh','US')"""
-        cursor.execute(query)
-        query = """INSERT INTO PLAYER (p_nick,p_name,p_surname,p_country) VALUES ('ODPixel','Owen ','Davies','GB')"""
-        cursor.execute(query)
-        query = """INSERT INTO PLAYER (p_nick,p_name,p_surname,p_country) VALUES ('Blitz','William ','Lee','US')"""
-        cursor.execute(query)
-        query = """INSERT INTO PLAYER (p_nick,p_name,p_surname,p_country) VALUES ('GoDz','David ','Parker','AU')"""
-        cursor.execute(query)
-        query = """INSERT INTO PLAYER (p_nick,p_name,p_surname,p_country) VALUES ('Lyrical','Gabriel ','Cruz','US')"""
-        cursor.execute(query)
-        query = """INSERT INTO PLAYER (p_nick,p_name,p_surname,p_country) VALUES ('WinteR','Chan Litt ','Binn','MY')"""
-        cursor.execute(query)
-
-        query = """INSERT INTO TALENT(p_id ,tr_id,rl_id,lang)
-        VALUES((SELECT p_id from PLAYER WHERE p_nick = 'Sheever'),
-               (SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Invitational Season 3%'),
-               (SELECT rl_id FROM ROLE WHERE role = 'Host'),
-               'EN')"""
-        cursor.execute(query)
-        query = """INSERT INTO TALENT(p_id ,tr_id,rl_id,lang)
-        VALUES((SELECT p_id from PLAYER WHERE p_nick = 'Fogged'),
-               (SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Invitational Season 3%'),
-               (SELECT rl_id FROM ROLE WHERE role = 'Commentator'),
-               'EN')"""
-        cursor.execute(query)
-        query = """INSERT INTO TALENT(p_id ,tr_id,rl_id,lang)
-        VALUES((SELECT p_id from PLAYER WHERE p_nick = 'Capitalist'),
-               (SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Invitational Season 3%'),
-               (SELECT rl_id FROM ROLE WHERE role = 'Commentator'),
-               'EN')"""
-        cursor.execute(query)
-        query = """INSERT INTO TALENT(p_id ,tr_id,rl_id,lang)
-        VALUES((SELECT p_id from PLAYER WHERE p_nick = 'ODPixel'),
-               (SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Invitational Season 3%'),
-               (SELECT rl_id FROM ROLE WHERE role = 'Commentator'),
-               'EN')"""
-        cursor.execute(query)
-        query = """INSERT INTO TALENT(p_id ,tr_id,rl_id,lang)
-        VALUES((SELECT p_id from PLAYER WHERE p_nick = 'Blitz'),
-               (SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Invitational Season 3%'),
-               (SELECT rl_id FROM ROLE WHERE role = 'Commentator'),
-               'EN')"""
-        cursor.execute(query)
-        query = """INSERT INTO TALENT(p_id ,tr_id,rl_id,lang)
-        VALUES((SELECT p_id from PLAYER WHERE p_nick = 'GoDz'),
-               (SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Invitational Season 3%'),
-               (SELECT rl_id FROM ROLE WHERE role = 'Analyst'),
-               'EN')"""
-        cursor.execute(query)
-        query = """INSERT INTO TALENT(p_id ,tr_id,rl_id,lang)
-        VALUES((SELECT p_id from PLAYER WHERE p_nick = 'Lyrical'),
-               (SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Invitational Season 3%'),
-               (SELECT rl_id FROM ROLE WHERE role = 'Analyst'),
-               'EN')"""
-        cursor.execute(query)
-        query = """INSERT INTO TALENT(p_id ,tr_id,rl_id,lang)
-        VALUES((SELECT p_id from PLAYER WHERE p_nick = 'WinteR'),
-               (SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Invitational Season 3%'),
-               (SELECT rl_id FROM ROLE WHERE role = 'Analyst'),
-               'EN')"""
-        cursor.execute(query)
-
-
-        query = """INSERT INTO BRACKET (team_count,br_type,br_stage,tr_id,br_name)
-        VALUES (4,'0',0,(SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Invitational Season 3%'),'GROUP 1')"""
-        cursor.execute(query)
-        query = """INSERT INTO BRACKET (team_count,br_type,br_stage,tr_id,br_name)
-        VALUES (4,'0',1,(SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Invitational Season 3%'),'GROUP 2')"""
-        cursor.execute(query)
-
-
-
-
-        query = """INSERT INTO TEAM (t_name,t_tag,t_region,t_created)
-        VALUES ('Evil Geniuses','EG',1,'2011-10-24')"""
-        cursor.execute(query)
-        query = """INSERT INTO TEAM (t_name,t_tag,t_region,t_created)
-        VALUES ('compLexity Gaming','coL',1,'2012-02-16')"""
-        cursor.execute(query)
-        query = """INSERT INTO TEAM (t_name,t_tag,t_region,t_created)
-        VALUES ('Immortals','IMT',1,'2017-09-13')"""
-        cursor.execute(query)
-        query = """INSERT INTO TEAM (t_name,t_tag,t_region)
-        VALUES ('Mineski','Mski',5)"""
-        cursor.execute(query)
-        query = """INSERT INTO TEAM (t_name,t_tag,t_region,t_created)
-        VALUES ('Team Liquid','Liquid',3,'2012-12-06')"""
-        cursor.execute(query)
-        query = """INSERT INTO TEAM (t_name,t_tag,t_region,t_created)
-        VALUES ('Virtus.pro','VP',2,'2003-01-01')"""
-        cursor.execute(query)
-        query = """INSERT INTO TEAM (t_name,t_tag,t_region,t_created)
-        VALUES ('Team Secret','Secret',3,'2014-08-27')"""
-        cursor.execute(query)
-        query = """INSERT INTO TEAM (t_name,t_tag,t_region,t_created)
-        VALUES ('Newbee','Newbee',4,'2014-02-13')"""
-        cursor.execute(query)
-        query = """INSERT INTO TEAM (t_name,t_tag,t_region,t_created)
-        VALUES ('Vici Gaming','VG',4,'2012-09-21')"""
-        cursor.execute(query)
-        query = """INSERT INTO TEAM (t_name,t_tag,t_region,t_created)
-        VALUES ('LGD Gaming','LGD',4,'2009-01-01')"""
-        cursor.execute(query)
-        query = """INSERT INTO TEAM (t_name,t_tag,t_region,t_created)
-        VALUES ('Natus Vincere','NAVI',2,'2010-10-22')"""
-        cursor.execute(query)
-
-        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,result,t_1_score,t_2_score)
-        VALUES ((SELECT t_id FROM TEAM WHERE t_name LIKE '%Vici%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Immortals%'),(SELECT br_id FROM BRACKET WHERE br_name = 'GROUP 1'),3,2,0,2)"""
-        cursor.execute(query)
-        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,result,t_1_score,t_2_score)
-        VALUES ((SELECT t_id FROM TEAM WHERE t_name LIKE '%Liquid%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Mineski%'),(SELECT br_id FROM BRACKET WHERE br_name = 'GROUP 1'),3,1,2,0)"""
-        cursor.execute(query)
-        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,result,t_1_score,t_2_score)
-        VALUES ((SELECT t_id FROM TEAM WHERE t_name LIKE '%Immortals%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Liquid%'),(SELECT br_id FROM BRACKET WHERE br_name = 'GROUP 1'),3,2,0,2)"""
-        cursor.execute(query)
-        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,result,t_1_score,t_2_score)
-        VALUES ((SELECT t_id FROM TEAM WHERE t_name LIKE '%Vici%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Mineski%'),(SELECT br_id FROM BRACKET WHERE br_name = 'GROUP 1'),3,2,0,2)"""
-        cursor.execute(query)
-        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,result,t_1_score,t_2_score)
-        VALUES ((SELECT t_id FROM TEAM WHERE t_name LIKE '%Immortals%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Mineski%'),(SELECT br_id FROM BRACKET WHERE br_name = 'GROUP 1'),3,2,0,2)"""
-        cursor.execute(query)
-        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,result,t_1_score,t_2_score)
-        VALUES ((SELECT t_id FROM TEAM WHERE t_name LIKE '%Newbee%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%compLexity%'),(SELECT br_id FROM BRACKET WHERE br_name = 'GROUP 2'),3,2,0,2)"""
-        cursor.execute(query)
-        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,result,t_1_score,t_2_score)
-        VALUES ((SELECT t_id FROM TEAM WHERE t_name LIKE '%Secret%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Vincere%'),(SELECT br_id FROM BRACKET WHERE br_name = 'GROUP 2'),3,2,1,2)"""
-        cursor.execute(query)
-        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,result,t_1_score,t_2_score)
-        VALUES ((SELECT t_id FROM TEAM WHERE t_name LIKE '%compLexity%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Vincere%'),(SELECT br_id FROM BRACKET WHERE br_name = 'GROUP 2'),3,1,2,1)"""
-        cursor.execute(query)
-        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,result,t_1_score,t_2_score)
-        VALUES ((SELECT t_id FROM TEAM WHERE t_name LIKE '%Newbee%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Secret%'),(SELECT br_id FROM BRACKET WHERE br_name = 'GROUP 2'),3,2,0,2)"""
-        cursor.execute(query)
-        query = """INSERT INTO MATCH (t_id,t_id_2,br_id,m_type,result,t_1_score,t_2_score)
-        VALUES ((SELECT t_id FROM TEAM WHERE t_name LIKE '%Vincere%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Secret%'),(SELECT br_id FROM BRACKET WHERE br_name = 'GROUP 2'),3,2,0,2)"""
-        cursor.execute(query)
-
-        query = """ INSERT INTO PARTICIPANT (tr_id,t_id)
-        VALUES ((SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Invitational Season 3%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Newbee%'))"""
-        cursor.execute(query)
-        query = """ INSERT INTO PARTICIPANT (tr_id,t_id)
-        VALUES ((SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Invitational Season 3%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Liquid%'))"""
-        cursor.execute(query)
-        query = """ INSERT INTO PARTICIPANT (tr_id,t_id,qualifier_id)
-        VALUES ((SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Invitational Season 3%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Vici%'),2)"""
-        cursor.execute(query)
-        query = """ INSERT INTO PARTICIPANT (tr_id,t_id,qualifier_id)
-        VALUES ((SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Invitational Season 3%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Immortals%'),1)"""
-        cursor.execute(query)
-        query = """ INSERT INTO PARTICIPANT (tr_id,t_id,qualifier_id)
-        VALUES ((SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Invitational Season 3%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Secret%'),3)"""
-        cursor.execute(query)
-        query = """ INSERT INTO PARTICIPANT (tr_id,t_id,qualifier_id)
-        VALUES ((SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Invitational Season 3%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%compLexity%'),2)"""
-        cursor.execute(query)
-        query = """ INSERT INTO PARTICIPANT (tr_id,t_id,qualifier_id)
-        VALUES ((SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Invitational Season 3%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Mineski%'),2)"""
-        cursor.execute(query)
-        query = """ INSERT INTO PARTICIPANT (tr_id,t_id,qualifier_id)
-        VALUES ((SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Invitational Season 3%'),(SELECT t_id FROM TEAM WHERE t_name LIKE '%Vincere%'),2)"""
-        cursor.execute(query)
-
-        query = """INSERT INTO PLAYER (p_nick,p_name,p_surname,p_country,p_birth,p_mmr,t_id)
-        VALUES ('SumaiL','Syed Sumail','Hassan','PK','1999-02-13','8140',(SELECT t_id FROM TEAM WHERE t_name='Evil Geniuses'))"""
-        cursor.execute(query)
-        query = """INSERT INTO PLAYER (p_nick,p_name,p_surname,p_country,p_birth,p_mmr,t_id)
-        VALUES ('MATUMBAMAN','Lasse Aukusti','Urpalainen','FI','1995-03-03','9421',(SELECT t_id FROM TEAM WHERE t_name LIKE 'Team Liquid'))"""
-        cursor.execute(query)
-        query = """INSERT INTO PLAYER (p_nick,p_name,p_surname,p_country,p_birth,t_id)
-        VALUES ('Miracle-','Amer','Al-Barqawi','JO','1997-06-20',(SELECT t_id FROM TEAM WHERE t_name='Team Liquid'))"""
-        cursor.execute(query)
-
-        query = """INSERT INTO PLAYER (p_nick,t_id) VALUES ('RAMZES666',(SELECT t_id FROM TEAM WHERE t_name='Virtus.pro'))"""
-        cursor.execute(query)
-        query = """INSERT INTO PLAYER (p_nick,t_id) VALUES ('No[o]ne',(SELECT t_id FROM TEAM WHERE t_name='Virtus.pro'))"""
-        cursor.execute(query)
-        query = """INSERT INTO PLAYER (p_nick,t_id) VALUES ('9pasha',(SELECT t_id FROM TEAM WHERE t_name='Virtus.pro'))"""
-        cursor.execute(query)
-        query = """INSERT INTO PLAYER (p_nick,t_id) VALUES ('Lil',(SELECT t_id FROM TEAM WHERE t_name='Virtus.pro'))"""
-        cursor.execute(query)
-        query = """INSERT INTO PLAYER (p_nick,t_id) VALUES ('Solo',(SELECT t_id FROM TEAM WHERE t_name='Virtus.pro'))"""
-        cursor.execute(query)
-        query = """INSERT INTO PLAYER (p_nick,t_id) VALUES ('Ace',(SELECT t_id FROM TEAM WHERE t_name='Team Secret'))"""
-        cursor.execute(query)
-        query = """INSERT INTO PLAYER (p_nick,t_id) VALUES ('MidOne',(SELECT t_id FROM TEAM WHERE t_name='Team Secret'))"""
-        cursor.execute(query)
-        query = """INSERT INTO PLAYER (p_nick,t_id) VALUES ('Fata',(SELECT t_id FROM TEAM WHERE t_name='Team Secret'))"""
-        cursor.execute(query)
-        query = """INSERT INTO PLAYER (p_nick,t_id) VALUES ('YapzOr',(SELECT t_id FROM TEAM WHERE t_name='Team Secret'))"""
-        cursor.execute(query)
-        query = """INSERT INTO PLAYER (p_nick,t_id) VALUES ('Puppey',(SELECT t_id FROM TEAM WHERE t_name='Team Secret'))"""
-        cursor.execute(query)
-        query = """INSERT INTO PLAYER (p_nick,t_id) VALUES ('MinD_ContRoL',(SELECT t_id FROM TEAM WHERE t_name='Team Liquid'))"""
-        cursor.execute(query)
-        query = """INSERT INTO PLAYER (p_nick,t_id) VALUES ('GH',(SELECT t_id FROM TEAM WHERE t_name='Team Liquid'))"""
-        cursor.execute(query)
-        query = """INSERT INTO PLAYER (p_nick,t_id) VALUES ('KuroKy',(SELECT t_id FROM TEAM WHERE t_name='Team Liquid'))"""
-        cursor.execute(query)
-        query = """INSERT INTO PLAYER (p_nick,t_id) VALUES ('NaNa',(SELECT t_id FROM TEAM WHERE t_name='Mineski'))"""
-        cursor.execute(query)
-        query = """INSERT INTO PLAYER (p_nick,t_id) VALUES ('Mushi',(SELECT t_id FROM TEAM WHERE t_name='Mineski'))"""
-        cursor.execute(query)
-        query = """INSERT INTO PLAYER (p_nick,t_id) VALUES ('iceiceice',(SELECT t_id FROM TEAM WHERE t_name='Mineski'))"""
-        cursor.execute(query)
-        query = """INSERT INTO PLAYER (p_nick,t_id) VALUES ('Jabz',(SELECT t_id FROM TEAM WHERE t_name='Mineski'))"""
-        cursor.execute(query)
-        query = """INSERT INTO PLAYER (p_nick,t_id) VALUES ('ninjaboogie',(SELECT t_id FROM TEAM WHERE t_name='Mineski'))"""
-        cursor.execute(query)
-
-
-        query = """CREATE TABLE RESULT (
-        p_id INTEGER NOT NULL,
-        t_id INTEGER NOT NULL,
-        tr_id INTEGER NOT NULL,
-        placement INTEGER,
-        dpc_points REAL,
-        prize INTEGER,
-        FOREIGN KEY(p_id) REFERENCES PLAYER(p_id) ON DELETE CASCADE,
-        FOREIGN KEY(t_id) REFERENCES TEAM(t_id) ON DELETE CASCADE,
-        FOREIGN KEY(tr_id) REFERENCES TOURNAMENT(tr_id) ON DELETE CASCADE
-        )"""
-        cursor.execute(query)
-
-        query = """INSERT INTO RESULT (p_id,t_id,tr_id,placement,dpc_points)
-        VALUES ((SELECT p_id FROM PLAYER WHERE p_nick='RAMZES666'),
-                (SELECT t_id FROM TEAM WHERE t_name='Virtus.pro'),
-                (SELECT tr_id FROM TOURNAMENT WHERE tr_name='ESL One Hamburg 2017'),
-                1,650),
-                ((SELECT p_id FROM PLAYER WHERE p_nick='No[o]ne'),
-                (SELECT t_id FROM TEAM WHERE t_name='Virtus.pro'),
-                (SELECT tr_id FROM TOURNAMENT WHERE tr_name='ESL One Hamburg 2017'),
-                1,750),
-                ((SELECT p_id FROM PLAYER WHERE p_nick='9pasha'),
-                (SELECT t_id FROM TEAM WHERE t_name='Virtus.pro'),
-                (SELECT tr_id FROM TOURNAMENT WHERE tr_name='ESL One Hamburg 2017'),
-                1,750),
-                ((SELECT p_id FROM PLAYER WHERE p_nick='Lil'),
-                (SELECT t_id FROM TEAM WHERE t_name='Virtus.pro'),
-                (SELECT tr_id FROM TOURNAMENT WHERE tr_name='ESL One Hamburg 2017'),
-                1,750),
-                ((SELECT p_id FROM PLAYER WHERE p_nick='Solo'),
-                (SELECT t_id FROM TEAM WHERE t_name='Virtus.pro'),
-                (SELECT tr_id FROM TOURNAMENT WHERE tr_name='ESL One Hamburg 2017'),
-                1,750)
-                """
-        cursor.execute(query)
-
-        query = """INSERT INTO RESULT (p_id,t_id,tr_id,placement,dpc_points)
-        VALUES ((SELECT p_id FROM PLAYER WHERE p_nick='RAMZES666'),
-                (SELECT t_id FROM TEAM WHERE t_name='Virtus.pro'),
-                (SELECT tr_id FROM TOURNAMENT WHERE tr_name='AMD SAPPHIRE Dota PIT League'),
-                4,15),
-                ((SELECT p_id FROM PLAYER WHERE p_nick='No[o]ne'),
-                (SELECT t_id FROM TEAM WHERE t_name='Virtus.pro'),
-                (SELECT tr_id FROM TOURNAMENT WHERE tr_name='AMD SAPPHIRE Dota PIT League'),
-                4,15),
-                ((SELECT p_id FROM PLAYER WHERE p_nick='9pasha'),
-                (SELECT t_id FROM TEAM WHERE t_name='Virtus.pro'),
-                (SELECT tr_id FROM TOURNAMENT WHERE tr_name='AMD SAPPHIRE Dota PIT League'),
-                4,15),
-                ((SELECT p_id FROM PLAYER WHERE p_nick='Lil'),
-                (SELECT t_id FROM TEAM WHERE t_name='Virtus.pro'),
-                (SELECT tr_id FROM TOURNAMENT WHERE tr_name='AMD SAPPHIRE Dota PIT League'),
-                4,15),
-                ((SELECT p_id FROM PLAYER WHERE p_nick='Solo'),
-                (SELECT t_id FROM TEAM WHERE t_name='Virtus.pro'),
-                (SELECT tr_id FROM TOURNAMENT WHERE tr_name='AMD SAPPHIRE Dota PIT League'),
-                4,15)
-                """
-        cursor.execute(query)
-
-        query = """INSERT INTO RESULT (p_id,t_id,tr_id,placement,dpc_points)
-        VALUES ((SELECT p_id FROM PLAYER WHERE p_nick='Ace'),
-                (SELECT t_id FROM TEAM WHERE t_name='Team Secret'),
-                (SELECT tr_id FROM TOURNAMENT WHERE tr_name='ESL One Hamburg 2017'),
-                2,450),
-                ((SELECT p_id FROM PLAYER WHERE p_nick='MidOne'),
-                (SELECT t_id FROM TEAM WHERE t_name='Team Secret'),
-                (SELECT tr_id FROM TOURNAMENT WHERE tr_name='ESL One Hamburg 2017'),
-                2,450),
-                ((SELECT p_id FROM PLAYER WHERE p_nick='Fata'),
-                (SELECT t_id FROM TEAM WHERE t_name='Team Secret'),
-                (SELECT tr_id FROM TOURNAMENT WHERE tr_name='ESL One Hamburg 2017'),
-                2,450),
-                ((SELECT p_id FROM PLAYER WHERE p_nick='YapzOr'),
-                (SELECT t_id FROM TEAM WHERE t_name='Team Secret'),
-                (SELECT tr_id FROM TOURNAMENT WHERE tr_name='ESL One Hamburg 2017'),
-                2,450),
-                ((SELECT p_id FROM PLAYER WHERE p_nick='Puppey'),
-                (SELECT t_id FROM TEAM WHERE t_name='Team Secret'),
-                (SELECT tr_id FROM TOURNAMENT WHERE tr_name='ESL One Hamburg 2017'),
-                2,450)
-                """
-        cursor.execute(query)
-
-        query = """INSERT INTO RESULT (p_id,t_id,tr_id,placement,dpc_points)
-        VALUES ((SELECT p_id FROM PLAYER WHERE p_nick='MATUMBAMAN'),
-                (SELECT t_id FROM TEAM WHERE t_name='Team Liquid'),
-                (SELECT tr_id FROM TOURNAMENT WHERE tr_name='ESL One Hamburg 2017'),
-                3,150),
-                ((SELECT p_id FROM PLAYER WHERE p_nick='Miracle-'),
-                (SELECT t_id FROM TEAM WHERE t_name='Team Liquid'),
-                (SELECT tr_id FROM TOURNAMENT WHERE tr_name='ESL One Hamburg 2017'),
-                3,150),
-                ((SELECT p_id FROM PLAYER WHERE p_nick='MinD_ContRoL'),
-                (SELECT t_id FROM TEAM WHERE t_name='Team Liquid'),
-                (SELECT tr_id FROM TOURNAMENT WHERE tr_name='ESL One Hamburg 2017'),
-                3,150),
-                ((SELECT p_id FROM PLAYER WHERE p_nick='GH'),
-                (SELECT t_id FROM TEAM WHERE t_name='Team Liquid'),
-                (SELECT tr_id FROM TOURNAMENT WHERE tr_name='ESL One Hamburg 2017'),
-                3,150),
-                ((SELECT p_id FROM PLAYER WHERE p_nick='KuroKy'),
-                (SELECT t_id FROM TEAM WHERE t_name='Team Liquid'),
-                (SELECT tr_id FROM TOURNAMENT WHERE tr_name='ESL One Hamburg 2017'),
-                3,150)
-                """
-        cursor.execute(query)
-
-        query = """ CREATE TABLE ROSTER(
-        p_id INTEGER NOT NULL,
-        t_id INTEGER NOT NULL,
-        join_date DATE,
-        leave_date DATE,
-        position INTEGER,
-        is_captain BOOLEAN NOT NULL,
-        FOREIGN KEY(p_id) REFERENCES PLAYER(p_id) ON DELETE CASCADE,
-        FOREIGN KEY(t_id) REFERENCES TEAM(t_id) ON DELETE CASCADE
-        )"""
-        cursor.execute(query)
-        query = """ INSERT INTO ROSTER (p_id, t_id , join_date, position,is_captain)
-        VALUES ((SELECT p_id FROM PLAYER WHERE p_nick LIKE '%SumaiL%'),
-                (SELECT t_id FROM TEAM WHERE t_name LIKE '%Evil%'),
-                 '2015-01-05',
-                 2,
-                 False)"""
-        cursor.execute(query)
-        query = """ INSERT INTO ROSTER (p_id, t_id , join_date, leave_date, position,is_captain)
-        VALUES ((SELECT p_id FROM PLAYER WHERE p_nick LIKE '%SumaiL%'),
-                (SELECT t_id FROM TEAM WHERE t_name LIKE '%Evil%'),
-                 '2014-01-11','2015-01-05',
-                 2,
-                 False)"""
-        cursor.execute(query)
+        data1 = ""
+        data2 = ""
+        with open('structure.sql', 'r') as sql:
+            data1=sql.read()
+            cursor.execute(data1)
+        with open('data.sql', 'r') as sql:
+            data2=sql.read()
+            cursor.execute(data2)
         connection.commit()
-
     return redirect(url_for('home_page'))
 
 

@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}" />
   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+  <script src="{{ url_for('static', filename='jquery-3.2.1.min.js') }}"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
   <script src="{{ url_for('static', filename='bootstrap.min.js') }}" charset="utf-8"></script>
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
@@ -20,9 +20,15 @@
 .ui-autocomplete-loading {
   background: white url("{{ url_for('static', filename='load.gif') }}") 97% 50% no-repeat;
 }
+table.teams td{
+  padding: 0.4rem;
+}
+table.teams td:hover{
+  cursor: pointer;
+}
 </style>
 <body class="bg-light">
-  <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+  <header class="navbar navbar-expand-md navbar-dark bg-dark">
     <div class="container">
 
       <a href="/" class="navbar-brand">DOTABASE</a>
@@ -68,4 +74,4 @@
       <!-- Search Bar -->
 
     </div>
-  </nav>
+  </header>

@@ -1,5 +1,7 @@
+{% if title|length > 0 %}
 <div class="h2 mb-3 pl-1 text-wlight">{{ title }}</div>
 <hr>
+{% endif %}
 <div class="row">
   {% for size in sizes %}
   <div class="col-lg-{{ size }}">
