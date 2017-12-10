@@ -30,7 +30,7 @@ CREATE TABLE PLAYER (
 CREATE TABLE TOURNAMENT (
       tr_id SERIAL PRIMARY KEY,
       tr_name VARCHAR(60) NOT NULL,
-      tr_date DATE,
+      tr_date DATE NOT NULL,
       tr_enddate DATE,
       parent_tr_id INTEGER,
       FOREIGN KEY(parent_tr_id) REFERENCES TOURNAMENT(tr_id) ON DELETE CASCADE

@@ -23,7 +23,13 @@
   <div class="form-group row">
     <label for="inputParentTournamentId" class="col-sm-2 col-form-label-lg">Parent ID</label>
     <div class="col-sm-10">
-      <input type="number" class="form-control form-control-lg" name=parent_id id="inputParentTournamentId" placeholder="Parent Tournament's ID">
+      <input type="text" readonly="readonly" class="form-control form-control-lg" name=parent_id id="inputParentTournamentId" placeholder="Parent ID">
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="inputParentName" class="col-sm-2 col-form-label-lg">Parent Name</label>
+    <div class="col-sm-10">
+      <input type="text" class="form-control form-control-lg" name=parentname id="inputParentName" placeholder="Team Name">
     </div>
   </div>
   <div class="form-group row">
@@ -35,3 +41,27 @@
 </form>
 
 </div>
+
+<script>
+$( function() {
+  $("#inputParentName").autocomplete({
+    source: function(request,response){
+      $.getJSON("../json/tournament/"+request.term, function (data) {
+        console.log(data);
+        response($.map(data, function (value) {
+              return {
+                  value: value["id"],
+                  label: value["name"]
+              };
+          }));
+        });
+    },
+    dataType: "json",
+    select: function(event,ui){
+      event.preventDefault();
+      $(this).val(ui.item.label);
+      $("#inputParentTournamentId").val(ui.item.value);
+    }
+  });
+} );
+</script>

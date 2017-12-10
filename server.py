@@ -100,7 +100,6 @@ def add_player():
         surname = (request.form['surname'],"p_surname")
         country = (request.form['country'],"p_country")
         birth_date = (request.form['birth_date'],"p_birth")
-        teamid = (request.form['teamid'],"t_id")
         mmr = (request.form['mmr'],"p_mmr")
 
         s = ""
@@ -180,13 +179,13 @@ def add_team():
         return Response(
                render_template('header.html', title="Admin Login") + \
                render_template('alert.html', color=lcolor,text=ltext) + \
-               render_template('teamform.html') + \
+               render_template('teamform.html', regions=teamRegionList) + \
                render_template('footer.html')
                )
     else:
         return Response(
                render_template('header.html', title="Admin Login") + \
-               render_template('teamform.html') + \
+               render_template('teamform.html', regions=teamRegionList) + \
                render_template('footer.html')
                )
 
@@ -817,10 +816,10 @@ def tournament_profile(trname):
         if tournament_info[3]!=None:
             info.append(('End Date',tournament_info[3]))
         if tournament_info[4]!=None:
-            query4 = """ SELECT t_name FROM TOURNAMENT WHERE t_id = %s"""
+            query4 = """ SELECT tr_name FROM TOURNAMENT WHERE tr_id = %s"""
             cursor.execute(query4,[tournament_info[4]])
-            parentTournamentName = cursor.fetchall()[0]
-            info.append(('Parent Tournament',parentTournamentName))
+            parentTournamentName = cursor.fetchone()
+            info.append(('Parent Tournament',parentTournamentName[0]))
 
         groupTitles= ['Team','Win-Lose']
         groupColArray = ['3','1']
@@ -862,6 +861,19 @@ def jsonplayer(nick):
         result = cursor.fetchall()
         connection.commit()
     return jsonify(result)
+
+@app.route('/json/tournament/<name>')
+def jsontournament(name):
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor = connection.cursor()
+        query = """ SELECT tr_id,tr_name FROM TOURNAMENT WHERE LOWER(tr_name) LIKE LOWER(%s)"""
+        cursor.execute(query,['%'+name+'%'])
+        result = cursor.fetchall()
+        connection.commit()
+    resultList = []
+    for i in result:
+        resultList.append({"id":i[0],"name":i[1]})
+    return jsonify(resultList)
 
 @app.route('/json/team/<name>')
 def jsonteam(name):
