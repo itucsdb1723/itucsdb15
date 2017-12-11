@@ -20,7 +20,6 @@ CREATE TABLE TEAM(
   );
 CREATE TABLE PLAYER (
       p_id SERIAL PRIMARY KEY,
-      p_accountid INTEGER UNIQUE,
       p_nick VARCHAR(20) NOT NULL UNIQUE,
       p_name VARCHAR(60),
       p_surname VARCHAR(60),
