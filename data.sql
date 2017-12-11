@@ -443,7 +443,7 @@ INSERT INTO ROSTER (p_id, t_id , join_date, position, is_captain)
     VALUES ((SELECT p_id FROM PLAYER WHERE p_nick = 'Crystallize'),
             (SELECT t_id FROM TEAM WHERE t_name LIKE '%Natus%'),
             '2017-09-04',1,False);
-INSERT INTO PLAYER (p_nick,p_name,p_surname,p_image,p_country,p_birth) VALUES ('Dendi','Danil','Ishutin','http://wiki.teamliquid.net/commons/images/thumb/1/1b/Dendi_DHS_2015.jpg/800px-Dendi_DHS_2015.jpg','UA','1989-12-30');
+INSERT INTO PLAYER (p_nick,p_name,p_surname,p_image,p_country,p_birth) VALUES ('Dendi','Danil','Ishutin','https://cybbet-static.s3.eu-central-1.amazonaws.com/images/news/d0953c700dd10eeb55045ba69d8a08a7.jpg','UA','1989-12-30');
 INSERT INTO ROSTER (p_id, t_id , join_date, position, is_captain)
     VALUES ((SELECT p_id FROM PLAYER WHERE p_nick = 'Dendi'),
             (SELECT t_id FROM TEAM WHERE t_name LIKE '%Natus%'),
