@@ -558,6 +558,7 @@ def home_page():
         teams = cursor.fetchall()
         cursor.execute(tr_query,[date.today()])
         tournaments = cursor.fetchall()
+        
     return render_template('header.html', title="Dotabase", route="home") + \
            render_template('home.html') + \
            render_template('dividepage.html', sizes = (5,7), content=(
@@ -574,7 +575,7 @@ def player_profile(nick):
         cursor = connection.cursor()
         query = """SELECT * FROM (SELECT * FROM PLAYER WHERE p_nick=%s) AS PLAYER LEFT JOIN (SELECT ID.p_id,ID.t_id,TEAM.t_name FROM (SELECT p_id,t_id FROM ROSTER WHERE leave_date IS NULL) AS ID LEFT JOIN TEAM ON ID.t_id=TEAM.t_id) AS TEAM ON PLAYER.p_id = TEAM.p_id"""
         cursor.execute(query,[nick])
-        player_info = cursor.fetchall()[0]
+        player_info = cursor.fetchone()
         query2 = """ SELECT t_name,join_date,leave_date,position,is_captain FROM ROSTER JOIN TEAM ON ROSTER.t_id=TEAM.t_id WHERE p_id=%s ORDER BY leave_date IS NULL DESC, join_date DESC"""
         cursor.execute(query2,[player_info[0]])
         history = cursor.fetchall()
@@ -628,14 +629,17 @@ def player_profile(nick):
         teamrank=teamrank[0][0]
     else:
         teamrank=""
+
     stats = [('DPC Points',results[0]),
              ('Played',results[1]),
              ('Qualified',results[2]),
              ('Team Rank',teamrank)]
+
     resultTitles = ['Tournament Name','Date','Plc.','DPC','Prize']
     resultColArray = ['5','2','1','2','2']
     historyTitles= ['Team Name','Join Date','Leave Date','Position','Captain']
     historyColArray = ['3','3','2','2','2']
+
     return render_template('header.html', title="Dotabase", route="player") + \
            render_template('profile.html', name=player_info[2], info=info, ) + \
            render_template('stats.html', stats=stats) + \
@@ -647,7 +651,14 @@ def player_profile(nick):
 def players_page():
     with dbapi2.connect(app.config['dsn']) as connection:
         cursor = connection.cursor()
-        query = """ SELECT PLAYER.p_nick,dpc FROM (SELECT SUM(dpc_points) as dpc,p_id FROM RESULT GROUP BY p_id ORDER BY dpc DESC) as RESULT RIGHT JOIN PLAYER ON RESULT.p_id = PLAYER.p_id"""
+        query = """ SELECT PLAYER.p_nick,dpc
+                    FROM (
+                           SELECT SUM(dpc_points) as dpc,p_id
+                           FROM RESULT
+                           GROUP BY p_id
+                           ORDER BY dpc DESC) as RESULT
+                    RIGHT JOIN PLAYER
+                    ON RESULT.p_id = PLAYER.p_id"""
         cursor.execute(query)
         players = cursor.fetchall()
         connection.commit()
@@ -661,7 +672,7 @@ def team_profile(tname):
         cursor = connection.cursor()
         query = """ SELECT * FROM TEAM WHERE t_name=%s"""
         cursor.execute(query,[tname])
-        team_info = cursor.fetchall()[0]
+        team_info = cursor.fetchone()
         query2 = """SELECT p_nick,join_date,leave_date,position,is_captain FROM ROSTER LEFT JOIN PLAYER ON ROSTER.p_id=PLAYER.p_id WHERE ROSTER.t_id = %s ORDER BY leave_date DESC,position ASC"""
         cursor.execute(query2,[team_info[0]])
         rosterList = cursor.fetchall()
@@ -735,44 +746,78 @@ def tournament_profile(trname):
         tournament_info = cursor.fetchone()
 
         query2 ="""SELECT *
-                        FROM (SELECT TEAM.t_name,SUM(won_mathces) AS winScoreTotal,SUM(lose_mathces) AS loseScoreTotal,SUM(team_won) AS teamWonTotal ,SUM(team_lose) AS teamLoseTotal,br_stage
-                                FROM(
-                                    SELECT  t_id as team_ids ,SUM(CASE WHEN result = 1 THEN 1 ELSE 0 END) as won_mathces,SUM(CASE WHEN result = 2 THEN 1 ELSE 0 END) as lose_mathces,SUM(t_1_score) AS team_won, SUM(t_2_score) AS team_lose,br_stage
-                                        FROM MATCH LEFT JOIN BRACKET ON MATCH.br_id = BRACKET.br_id WHERE MATCH.br_id  IN (SELECT  br_id FROM BRACKET WHERE BRACKET.tr_id = %s )  AND BRACKET.br_type = '0' GROUP BY team_ids,br_stage
+                    FROM (
+                            SELECT TEAM.t_name,SUM(won_mathces) AS winScoreTotal,SUM(lose_mathces) AS loseScoreTotal,SUM(team_won) AS teamWonTotal ,SUM(team_lose) AS teamLoseTotal,br_stage
+                            FROM(
+                                    SELECT  t_id as team_ids ,SUM(CASE WHEN t_1_score > t_2_score THEN 1 ELSE 0 END) as won_mathces,SUM(CASE WHEN t_2_score > t_1_score THEN 1 ELSE 0 END) as lose_mathces,SUM(t_1_score) AS team_won, SUM(t_2_score) AS team_lose,br_stage
+                                    FROM MATCH
+                                    LEFT JOIN BRACKET
+                                    ON MATCH.br_id = BRACKET.br_id
+                                    WHERE MATCH.br_id
+                                    IN (SELECT  br_id FROM BRACKET WHERE BRACKET.tr_id = %s )
+                                    AND BRACKET.br_type = '0'
+                                    GROUP BY team_ids,br_stage
                                     UNION All
-                                    SELECT  t_id_2 as team_ids ,SUM(CASE WHEN result = 2 THEN 1 ELSE 0 END) as won_mathces,SUM(CASE WHEN result = 1 THEN 1 ELSE 0 END) as lose_mathces,SUM(t_2_score) AS team_won, SUM(t_1_score) AS team_lose,br_stage
-                                        FROM MATCH LEFT JOIN BRACKET ON MATCH.br_id = BRACKET.br_id WHERE MATCH.br_id  IN (SELECT  br_id FROM BRACKET WHERE BRACKET.tr_id = %s )  AND BRACKET.br_type = '0' GROUP BY team_ids,br_stage
-                                    ) AS teamScores LEFT JOIN TEAM ON teamScores.team_ids = TEAM.t_id GROUP BY TEAM.t_name,br_stage
-                             )as teamScores ORDER BY  br_stage ASC, loseScoreTotal ASC,winScoreTotal DESC
+                                    SELECT  t_id_2 as team_ids ,SUM(CASE WHEN t_2_score > t_1_score THEN 1 ELSE 0 END) as won_mathces,SUM(CASE WHEN t_1_score > t_2_score THEN 1 ELSE 0 END) as lose_mathces,SUM(t_2_score) AS team_won, SUM(t_1_score) AS team_lose,br_stage
+                                    FROM MATCH
+                                    LEFT JOIN BRACKET
+                                    ON MATCH.br_id = BRACKET.br_id
+                                    WHERE MATCH.br_id
+                                    IN (SELECT  br_id FROM BRACKET WHERE BRACKET.tr_id = %s )
+                                    AND BRACKET.br_type = '0'
+                                    GROUP BY team_ids,br_stage
+                                ) AS teamScores LEFT JOIN TEAM ON teamScores.team_ids = TEAM.t_id GROUP BY TEAM.t_name,br_stage
+                          )as teamScores
+                    ORDER BY  br_stage ASC, loseScoreTotal ASC,winScoreTotal DESC
                 """
         cursor.execute(query2,[tournament_info[0],tournament_info[0]])
         groupMatches = cursor.fetchall()
 
         query3 =""" SELECT matches.t_id,team1name,t_id_2,TEAM.t_name as team2name,t_1_score,t_2_score,br_name,br_stage,br_index,COALESCE(m_index,0)
-                        FROM ( SELECT  matches.t_id,TEAM.t_name as team1name,t_id_2,br_name,t_1_score,t_2_score,br_stage,br_index,m_index
+                    FROM (
+                            SELECT  matches.t_id,TEAM.t_name as team1name,t_id_2,br_name,t_1_score,t_2_score,br_stage,br_index,m_index
                             FROM (
-                            SELECT t_id,t_id_2,br_name,t_1_score,t_2_score,br_stage,br_index,m_index
-                            FROM BRACKET
-                            LEFT JOIN MATCH
-                            ON BRACKET.br_id = MATCH.br_id
-                            WHERE BRACKET.tr_id = %s
-                            AND BRACKET.br_type = '1'
-                    ) as matches LEFT JOIN TEAM ON TEAM.t_id = matches.t_id) as matches LEFT JOIN TEAM ON TEAM.t_id = matches.t_id_2 ORDER BY br_stage DESC,m_index ASC,br_index ASC"""
+                                    SELECT t_id,t_id_2,br_name,t_1_score,t_2_score,br_stage,br_index,m_index
+                                    FROM BRACKET
+                                    LEFT JOIN MATCH
+                                    ON BRACKET.br_id = MATCH.br_id
+                                    WHERE BRACKET.tr_id = %s
+                                    AND BRACKET.br_type = '1'
+                                    ) as matches
+                            LEFT JOIN TEAM
+                            ON TEAM.t_id = matches.t_id
+                        ) as matches
+                    LEFT JOIN TEAM
+                    ON TEAM.t_id = matches.t_id_2
+                    ORDER BY br_stage DESC,m_index ASC,br_index ASC"""
         cursor.execute(query3,[tournament_info[0]])
         playoffMatches = cursor.fetchall()
 
         query4= """ SELECT teamTable.teamName,TOURNAMENT.tr_name
-                        FROM(
-                            SELECT qualifier_id,TEAM.t_name as teamName
-                                FROM PARTICIPANT LEFT JOIN TEAM ON TEAM.t_id = PARTICIPANT.t_id WHERE PARTICIPANT.tr_id = %s
-                             ) as teamTable LEFT JOIN TOURNAMENT ON TOURNAMENT.tr_id = teamTable.qualifier_id  ORDER BY (TOURNAMENT.tr_name IS NULL) DESC """
+                    FROM(
+                        SELECT qualifier_id,TEAM.t_name as teamName
+                        FROM PARTICIPANT
+                        LEFT JOIN TEAM
+                        ON TEAM.t_id = PARTICIPANT.t_id
+                        WHERE PARTICIPANT.tr_id = %s
+                        ) as teamTable
+                    LEFT JOIN TOURNAMENT
+                    ON TOURNAMENT.tr_id = teamTable.qualifier_id
+                    ORDER BY (TOURNAMENT.tr_name IS NULL) DESC """
         cursor.execute(query4,[tournament_info[0]])
         participants = cursor.fetchall()
 
         query5 = """SELECT role,p_nick,p_name,p_surname,lang,priority
-                        FROM (SELECT p_id,lang,role,priority
-                                FROM TALENT LEFT JOIN ROLE ON ROLE.rl_id = TALENT.rl_id WHERE TALENT.tr_id = %s
-                                ) AS talents LEFT JOIN PLAYER ON PLAYER.p_id = talents.p_id  ORDER BY lang ASC, priority ASC"""
+                    FROM (
+                            SELECT p_id,lang,role,priority
+                            FROM TALENT
+                            LEFT JOIN ROLE
+                            ON ROLE.rl_id = TALENT.rl_id
+                            WHERE TALENT.tr_id = %s
+                          ) AS talents
+                    LEFT JOIN PLAYER
+                    ON PLAYER.p_id = talents.p_id
+                    ORDER BY lang ASC, priority ASC"""
         cursor.execute(query5,[tournament_info[0]])
         talents = cursor.fetchall()
 
@@ -809,7 +854,6 @@ def tournament_profile(trname):
                     tempStage.append([x[:7] for x in playoffMatches if x[8] == z and x[7] == y])
                 playoffMatchesInfo.append(tempStage)
 
-
         info = []
         if tournament_info[2]!=None:
             info.append(('Start Date',tournament_info[2]))
@@ -820,9 +864,6 @@ def tournament_profile(trname):
             cursor.execute(query4,[tournament_info[4]])
             parentTournamentName = cursor.fetchone()
             info.append(('Parent Tournament',parentTournamentName[0]))
-
-        groupTitles= ['Team','Win-Lose']
-        groupColArray = ['3','1']
 
         return render_template('header.html', title="Dotabase", route="tournaments") + \
                render_template('tournamentprofile.html', name=tournament_info[1], info=info, )  + \
@@ -837,10 +878,12 @@ def tournament_profile(trname):
 def tournaments_page():
     with dbapi2.connect(app.config['dsn']) as connection:
         cursor = connection.cursor()
+
         query = """ SELECT tr_name,tr_date FROM TOURNAMENT ORDER BY tr_date DESC """
         cursor.execute(query)
         tournaments = cursor.fetchall()
         connection.commit()
+
     colors = []
     today = date.today()
     for tournament in tournaments:
@@ -848,6 +891,7 @@ def tournaments_page():
             colors.append("primary")
         if tournament[1]<=today:
             colors.append("danger")
+
     return render_template('header.html', title="Dotabase", route="tournaments") + \
            render_template('list.html', title="All Tournaments", route="tournaments", items=tournaments, color=colors) + \
            render_template('footer.html')

@@ -59,7 +59,6 @@ CREATE TABLE MATCH(
       br_id INTEGER,
       m_type SMALLINT,
       m_index SMALLINT,
-      result SMALLINT,
       t_1_score SMALLINT,
       t_2_score SMALLINT,
       FOREIGN KEY (t_id)  REFERENCES TEAM(t_id) ON DELETE CASCADE,
