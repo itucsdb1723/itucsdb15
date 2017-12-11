@@ -190,6 +190,8 @@ INSERT INTO TEAM (t_name,t_tag,t_region)
     VALUES ('Mineski','Mski',5);
 INSERT INTO TEAM (t_name,t_tag,t_region)
     VALUES ('Fnatic','Fnatic',5);
+INSERT INTO TEAM (t_name,t_tag,t_region)
+    VALUES ('TNC Pro Team','TNC',5);
 INSERT INTO TEAM (t_name,t_tag,t_region,t_created)
     VALUES ('Virtus.pro','VP',3,'2003-01-01');
 INSERT INTO TEAM (t_name,t_tag,t_region,t_created)
@@ -253,6 +255,7 @@ INSERT INTO ROSTER (p_id, t_id , join_date, position, is_captain)
     VALUES ((SELECT p_id FROM PLAYER WHERE p_nick = 'Puppey'),
             (SELECT t_id FROM TEAM WHERE t_name LIKE '%Secret%'),
             '2014-08-27',5,True);
+
 INSERT INTO PLAYER (p_nick) VALUES ('MATUMBAMAN');
 INSERT INTO ROSTER (p_id, t_id , join_date, position, is_captain)
     VALUES ((SELECT p_id FROM PLAYER WHERE p_nick = 'MATUMBAMAN'),
@@ -278,6 +281,7 @@ INSERT INTO ROSTER (p_id, t_id , join_date, position, is_captain)
     VALUES ((SELECT p_id FROM PLAYER WHERE p_nick = 'KuroKy'),
             (SELECT t_id FROM TEAM WHERE t_name LIKE '%Liquid%'),
             '2015-10-09',5,True);
+
 INSERT INTO PLAYER (p_nick) VALUES ('RAMZES666');
 INSERT INTO ROSTER (p_id, t_id , join_date, position, is_captain)
     VALUES ((SELECT p_id FROM PLAYER WHERE p_nick = 'RAMZES666'),
@@ -304,32 +308,264 @@ INSERT INTO ROSTER (p_id, t_id , join_date, position, is_captain)
             (SELECT t_id FROM TEAM WHERE t_name LIKE '%Virtus%'),
             '2016-08-04',5,True);
 
+INSERT INTO PLAYER (p_nick) VALUES ('Moogy');
+INSERT INTO ROSTER (p_id, t_id , join_date, position, is_captain)
+    VALUES ((SELECT p_id FROM PLAYER WHERE p_nick = 'Moogy'),
+            (SELECT t_id FROM TEAM WHERE t_name LIKE '%Newbee%'),
+            '2016-09-17',1,False);
+INSERT INTO PLAYER (p_nick) VALUES ('Sccc');
+INSERT INTO ROSTER (p_id, t_id , join_date, position, is_captain)
+    VALUES ((SELECT p_id FROM PLAYER WHERE p_nick = 'Sccc'),
+            (SELECT t_id FROM TEAM WHERE t_name LIKE '%Newbee%'),
+            '2016-09-17',2,False);
+INSERT INTO PLAYER (p_nick) VALUES ('kpii');
+INSERT INTO ROSTER (p_id, t_id , join_date, position, is_captain)
+    VALUES ((SELECT p_id FROM PLAYER WHERE p_nick = 'kpii'),
+            (SELECT t_id FROM TEAM WHERE t_name LIKE '%Newbee%'),
+            '2016-03-25',3,False);
+INSERT INTO PLAYER (p_nick) VALUES ('Kaka');
+INSERT INTO ROSTER (p_id, t_id , join_date, position, is_captain)
+    VALUES ((SELECT p_id FROM PLAYER WHERE p_nick = 'Kaka'),
+            (SELECT t_id FROM TEAM WHERE t_name LIKE '%Newbee%'),
+            '2016-03-25',4,False);
+INSERT INTO PLAYER (p_nick) VALUES ('Faith');
+INSERT INTO ROSTER (p_id, t_id , join_date, position, is_captain)
+    VALUES ((SELECT p_id FROM PLAYER WHERE p_nick = 'Faith'),
+            (SELECT t_id FROM TEAM WHERE t_name LIKE '%Newbee%'),
+            '2016-09-17',5,True);
+
+INSERT INTO PLAYER (p_nick) VALUES ('Arteezy');
+INSERT INTO ROSTER (p_id, t_id , join_date, position, is_captain)
+    VALUES ((SELECT p_id FROM PLAYER WHERE p_nick = 'Arteezy'),
+            (SELECT t_id FROM TEAM WHERE t_name LIKE '%Evil%'),
+            '2016-09-15',1,False);
+INSERT INTO PLAYER (p_nick) VALUES ('SumaiL');
+INSERT INTO ROSTER (p_id, t_id , join_date, position, is_captain)
+    VALUES ((SELECT p_id FROM PLAYER WHERE p_nick = 'SumaiL'),
+            (SELECT t_id FROM TEAM WHERE t_name LIKE '%Evil%'),
+            '2016-09-15',2,False);
+INSERT INTO PLAYER (p_nick) VALUES ('UNiVeRsE');
+INSERT INTO ROSTER (p_id, t_id , join_date, position, is_captain)
+    VALUES ((SELECT p_id FROM PLAYER WHERE p_nick = 'UNiVeRsE'),
+            (SELECT t_id FROM TEAM WHERE t_name LIKE '%Evil%'),
+            '2016-06-09',3,False);
+INSERT INTO PLAYER (p_nick) VALUES ('Cr1t-');
+INSERT INTO ROSTER (p_id, t_id , join_date, position, is_captain)
+    VALUES ((SELECT p_id FROM PLAYER WHERE p_nick = 'Cr1t-'),
+            (SELECT t_id FROM TEAM WHERE t_name LIKE '%Evil%'),
+            '2016-09-15',4,False);
+INSERT INTO PLAYER (p_nick) VALUES ('Fear');
+INSERT INTO ROSTER (p_id, t_id , join_date, position, is_captain)
+    VALUES ((SELECT p_id FROM PLAYER WHERE p_nick = 'Fear'),
+            (SELECT t_id FROM TEAM WHERE t_name LIKE '%Evil%'),
+            '2017-09-01',5,True);
+
+INSERT INTO PLAYER (p_nick) VALUES ('NaNa');
+INSERT INTO ROSTER (p_id, t_id , join_date, position, is_captain)
+    VALUES ((SELECT p_id FROM PLAYER WHERE p_nick = 'NaNa'),
+            (SELECT t_id FROM TEAM WHERE t_name LIKE '%Mineski%'),
+            '2017-08-16',1,False);
+INSERT INTO PLAYER (p_nick) VALUES ('Mushi');
+INSERT INTO ROSTER (p_id, t_id , join_date, position, is_captain)
+    VALUES ((SELECT p_id FROM PLAYER WHERE p_nick = 'Mushi'),
+            (SELECT t_id FROM TEAM WHERE t_name LIKE '%Mineski%'),
+            '2017-03-20',2,True);
+INSERT INTO PLAYER (p_nick) VALUES ('iceiceice');
+INSERT INTO ROSTER (p_id, t_id , join_date, position, is_captain)
+    VALUES ((SELECT p_id FROM PLAYER WHERE p_nick = 'iceiceice'),
+            (SELECT t_id FROM TEAM WHERE t_name LIKE '%Mineski%'),
+            '2017-08-16',3,False);
+INSERT INTO PLAYER (p_nick) VALUES ('Jabz');
+INSERT INTO ROSTER (p_id, t_id , join_date, position, is_captain)
+    VALUES ((SELECT p_id FROM PLAYER WHERE p_nick = 'Jabz'),
+            (SELECT t_id FROM TEAM WHERE t_name LIKE '%Mineski%'),
+            '2017-08-16',4,False);
+INSERT INTO PLAYER (p_nick) VALUES ('ninjaboogie');
+INSERT INTO ROSTER (p_id, t_id , join_date, position, is_captain)
+    VALUES ((SELECT p_id FROM PLAYER WHERE p_nick = 'ninjaboogie'),
+            (SELECT t_id FROM TEAM WHERE t_name LIKE '%Mineski%'),
+            '2016-07-13',5,False);
+
+INSERT INTO PLAYER (p_nick) VALUES ('Paparazi');
+INSERT INTO ROSTER (p_id, t_id , join_date, position, is_captain)
+    VALUES ((SELECT p_id FROM PLAYER WHERE p_nick = 'Paparazi'),
+            (SELECT t_id FROM TEAM WHERE t_name LIKE '%Vici%'),
+            '2017-09-06',1,False);
+INSERT INTO PLAYER (p_nick) VALUES ('Ori');
+INSERT INTO ROSTER (p_id, t_id , join_date, position, is_captain)
+    VALUES ((SELECT p_id FROM PLAYER WHERE p_nick = 'Ori'),
+            (SELECT t_id FROM TEAM WHERE t_name LIKE '%Vici%'),
+            '2017-01-09',2,False);
+INSERT INTO PLAYER (p_nick) VALUES ('eLeVeN');
+INSERT INTO ROSTER (p_id, t_id , join_date, position, is_captain)
+    VALUES ((SELECT p_id FROM PLAYER WHERE p_nick = 'eLeVeN'),
+            (SELECT t_id FROM TEAM WHERE t_name LIKE '%Vici%'),
+            '2017-09-06',3,False);
+INSERT INTO PLAYER (p_nick) VALUES ('LaNm');
+INSERT INTO ROSTER (p_id, t_id , join_date, position, is_captain)
+    VALUES ((SELECT p_id FROM PLAYER WHERE p_nick = 'LaNm'),
+            (SELECT t_id FROM TEAM WHERE t_name LIKE '%Vici%'),
+            '2017-09-06',4,False);
+INSERT INTO PLAYER (p_nick) VALUES ('Fenrir');
+INSERT INTO ROSTER (p_id, t_id , join_date, position, is_captain)
+    VALUES ((SELECT p_id FROM PLAYER WHERE p_nick = 'Fenrir'),
+            (SELECT t_id FROM TEAM WHERE t_name LIKE '%Vici%'),
+            '2017-09-06',5,False);
+
+INSERT INTO PLAYER (p_nick) VALUES ('N0tail');
+INSERT INTO ROSTER (p_id, t_id , join_date, position, is_captain)
+    VALUES ((SELECT p_id FROM PLAYER WHERE p_nick = 'N0tail'),
+            (SELECT t_id FROM TEAM WHERE t_name LIKE '%OG%'),
+            '2015-10-31',1,False);
+INSERT INTO PLAYER (p_nick) VALUES ('Resolut1on');
+INSERT INTO ROSTER (p_id, t_id , join_date, position, is_captain)
+    VALUES ((SELECT p_id FROM PLAYER WHERE p_nick = 'Resolut1on'),
+            (SELECT t_id FROM TEAM WHERE t_name LIKE '%OG%'),
+            '2017-09-01',2,False);
+INSERT INTO PLAYER (p_nick) VALUES ('s4');
+INSERT INTO ROSTER (p_id, t_id , join_date, position, is_captain)
+    VALUES ((SELECT p_id FROM PLAYER WHERE p_nick = 's4'),
+            (SELECT t_id FROM TEAM WHERE t_name LIKE '%OG%'),
+            '2016-08-31',3,False);
+INSERT INTO PLAYER (p_nick) VALUES ('JerAx');
+INSERT INTO ROSTER (p_id, t_id , join_date, position, is_captain)
+    VALUES ((SELECT p_id FROM PLAYER WHERE p_nick = 'JerAx'),
+            (SELECT t_id FROM TEAM WHERE t_name LIKE '%OG%'),
+            '2016-08-31',4,False);
+INSERT INTO PLAYER (p_nick) VALUES ('Fly');
+INSERT INTO ROSTER (p_id, t_id , join_date, position, is_captain)
+    VALUES ((SELECT p_id FROM PLAYER WHERE p_nick = 'Fly'),
+            (SELECT t_id FROM TEAM WHERE t_name LIKE '%OG%'),
+            '2015-10-31',5,True);
+
+INSERT INTO PLAYER (p_nick) VALUES ('Crystallize');
+INSERT INTO ROSTER (p_id, t_id , join_date, position, is_captain)
+    VALUES ((SELECT p_id FROM PLAYER WHERE p_nick = 'Crystallize'),
+            (SELECT t_id FROM TEAM WHERE t_name LIKE '%Natus%'),
+            '2017-09-04',1,False);
+INSERT INTO PLAYER (p_nick,p_name,p_surname,p_image,p_country,p_birth) VALUES ('Dendi','Danil','Ishutin','http://wiki.teamliquid.net/commons/images/thumb/1/1b/Dendi_DHS_2015.jpg/800px-Dendi_DHS_2015.jpg','UA','1989-12-30');
+INSERT INTO ROSTER (p_id, t_id , join_date, position, is_captain)
+    VALUES ((SELECT p_id FROM PLAYER WHERE p_nick = 'Dendi'),
+            (SELECT t_id FROM TEAM WHERE t_name LIKE '%Natus%'),
+            '2015-10-20',2,False);
+INSERT INTO PLAYER (p_nick) VALUES ('GeneRaL');
+INSERT INTO ROSTER (p_id, t_id , join_date, position, is_captain)
+    VALUES ((SELECT p_id FROM PLAYER WHERE p_nick = 'GeneRaL'),
+            (SELECT t_id FROM TEAM WHERE t_name LIKE '%Natus%'),
+            '2016-02-23',3,False);
+INSERT INTO PLAYER (p_nick) VALUES ('RodjER');
+INSERT INTO ROSTER (p_id, t_id , join_date, position, is_captain)
+    VALUES ((SELECT p_id FROM PLAYER WHERE p_nick = 'RodjER'),
+            (SELECT t_id FROM TEAM WHERE t_name LIKE '%Natus%'),
+            '2017-09-04',4,False);
+INSERT INTO PLAYER (p_nick) VALUES ('SoNNeikO');
+INSERT INTO ROSTER (p_id, t_id , join_date, position, is_captain)
+    VALUES ((SELECT p_id FROM PLAYER WHERE p_nick = 'SoNNeikO'),
+            (SELECT t_id FROM TEAM WHERE t_name LIKE '%Natus%'),
+            '2017-04-20',5,True);
+
+INSERT INTO PLAYER (p_nick) VALUES ('Raven');
+INSERT INTO ROSTER (p_id, t_id , join_date, position, is_captain)
+    VALUES ((SELECT p_id FROM PLAYER WHERE p_nick = 'Raven'),
+            (SELECT t_id FROM TEAM WHERE t_name LIKE '%TNC%'),
+            '2016-11-29',1,False);
+INSERT INTO PLAYER (p_nick) VALUES ('Kuku');
+INSERT INTO ROSTER (p_id, t_id , join_date, position, is_captain)
+    VALUES ((SELECT p_id FROM PLAYER WHERE p_nick = 'Kuku'),
+            (SELECT t_id FROM TEAM WHERE t_name LIKE '%TNC%'),
+            '2016-08-31',2,False);
+INSERT INTO PLAYER (p_nick) VALUES ('Sam_H');
+INSERT INTO ROSTER (p_id, t_id , join_date, position, is_captain)
+    VALUES ((SELECT p_id FROM PLAYER WHERE p_nick = 'Sam_H'),
+            (SELECT t_id FROM TEAM WHERE t_name LIKE '%TNC%'),
+            '2016-08-30',3,False);
+INSERT INTO PLAYER (p_nick) VALUES ('Tims');
+INSERT INTO ROSTER (p_id, t_id , join_date, position, is_captain)
+    VALUES ((SELECT p_id FROM PLAYER WHERE p_nick = 'Tims'),
+            (SELECT t_id FROM TEAM WHERE t_name LIKE '%TNC%'),
+            '2016-12-15',4,False);
+INSERT INTO PLAYER (p_nick) VALUES ('1437');
+INSERT INTO ROSTER (p_id, t_id , join_date, position, is_captain)
+    VALUES ((SELECT p_id FROM PLAYER WHERE p_nick = '1437'),
+            (SELECT t_id FROM TEAM WHERE t_name LIKE '%TNC%'),
+            '2017-05-16',5,True);
+
+
 -- RESULTS
 INSERT INTO RESULT (p_id,t_id,tr_id,placement,dpc_points)
 SELECT p_id,t_id,(SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Invitational Season 3%'),3,30
 FROM ROSTER WHERE t_id = (SELECT t_id FROM TEAM WHERE t_name = 'Team Secret') AND leave_date IS NULL LIMIT 5;
 INSERT INTO RESULT (p_id,t_id,tr_id,placement,dpc_points)
-SELECT p_id,t_id,(SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Invitational Season 3%'),1,150
-FROM ROSTER WHERE t_id = (SELECT t_id FROM TEAM WHERE t_name = 'Team Liquid') AND leave_date IS NULL LIMIT 5;
-
-INSERT INTO RESULT (p_id,t_id,tr_id,placement,dpc_points)
 SELECT p_id,t_id,(SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%ESL One Hamburg%'),2,450
 FROM ROSTER WHERE t_id = (SELECT t_id FROM TEAM WHERE t_name = 'Team Secret') AND leave_date IS NULL LIMIT 5;
 INSERT INTO RESULT (p_id,t_id,tr_id,placement,dpc_points)
+SELECT p_id,t_id,(SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%DreamLeague%'),1,750
+FROM ROSTER WHERE t_id = (SELECT t_id FROM TEAM WHERE t_name = 'Team Secret') AND leave_date IS NULL LIMIT 5;
+
+INSERT INTO RESULT (p_id,t_id,tr_id,placement,dpc_points)
+SELECT p_id,t_id,(SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Invitational Season 3%'),2,90
+FROM ROSTER WHERE t_id = (SELECT t_id FROM TEAM WHERE t_name = 'Mineski') AND leave_date IS NULL LIMIT 5;
+INSERT INTO RESULT (p_id,t_id,tr_id,placement,dpc_points)
+SELECT p_id,t_id,(SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Bucharest%'),1,150
+FROM ROSTER WHERE t_id = (SELECT t_id FROM TEAM WHERE t_name = 'Mineski') AND leave_date IS NULL LIMIT 5;
+
+INSERT INTO RESULT (p_id,t_id,tr_id,placement,dpc_points)
+SELECT p_id,t_id,(SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%DreamLeague%'),3,225
+FROM ROSTER WHERE t_id = (SELECT t_id FROM TEAM WHERE t_name = 'Evil Geniuses') AND leave_date IS NULL LIMIT 5;
+INSERT INTO RESULT (p_id,t_id,tr_id,placement,dpc_points)
+SELECT p_id,t_id,(SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Bucharest%'),3,30
+FROM ROSTER WHERE t_id = (SELECT t_id FROM TEAM WHERE t_name = 'Evil Geniuses') AND leave_date IS NULL LIMIT 5;
+
+INSERT INTO RESULT (p_id,t_id,tr_id,placement,dpc_points)
+SELECT p_id,t_id,(SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Invitational Season 3%'),1,150
+FROM ROSTER WHERE t_id = (SELECT t_id FROM TEAM WHERE t_name = 'Team Liquid') AND leave_date IS NULL LIMIT 5;
+INSERT INTO RESULT (p_id,t_id,tr_id,placement,dpc_points)
 SELECT p_id,t_id,(SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%ESL One Hamburg%'),3,150
 FROM ROSTER WHERE t_id = (SELECT t_id FROM TEAM WHERE t_name = 'Team Liquid') AND leave_date IS NULL LIMIT 5;
-
 INSERT INTO RESULT (p_id,t_id,tr_id,placement,dpc_points)
 SELECT p_id,t_id,(SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Dota PIT%'),1,150
 FROM ROSTER WHERE t_id = (SELECT t_id FROM TEAM WHERE t_name = 'Team Liquid') AND leave_date IS NULL LIMIT 5;
-
-INSERT INTO RESULT (p_id,t_id,tr_id,placement,dpc_points)
-SELECT p_id,t_id,(SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%DreamLeague%'),1,750
-FROM ROSTER WHERE t_id = (SELECT t_id FROM TEAM WHERE t_name = 'Team Secret') AND leave_date IS NULL LIMIT 5;
 INSERT INTO RESULT (p_id,t_id,tr_id,placement,dpc_points)
 SELECT p_id,t_id,(SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%DreamLeague%'),2,450
 FROM ROSTER WHERE t_id = (SELECT t_id FROM TEAM WHERE t_name = 'Team Liquid') AND leave_date IS NULL LIMIT 5;
 
+INSERT INTO RESULT (p_id,t_id,tr_id,placement,dpc_points)
+SELECT p_id,t_id,(SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%MDL Macau%'),4,22.5
+FROM ROSTER WHERE t_id = (SELECT t_id FROM TEAM WHERE t_name = 'Virtus.pro') AND leave_date IS NULL LIMIT 4;
+INSERT INTO RESULT (p_id,t_id,tr_id,placement,dpc_points)
+SELECT p_id,t_id,(SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%ESL One Hamburg%'),1,750
+FROM ROSTER WHERE t_id = (SELECT t_id FROM TEAM WHERE t_name = 'Virtus.pro') AND leave_date IS NULL LIMIT 5;
+INSERT INTO RESULT (p_id,t_id,tr_id,placement,dpc_points)
+SELECT p_id,t_id,(SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Dota PIT%'),4,15
+FROM ROSTER WHERE t_id = (SELECT t_id FROM TEAM WHERE t_name = 'Virtus.pro') AND leave_date IS NULL LIMIT 5;
+
+INSERT INTO RESULT (p_id,t_id,tr_id,placement,dpc_points)
+SELECT p_id,t_id,(SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Perfect World Masters%'),1,150
+FROM ROSTER WHERE t_id = (SELECT t_id FROM TEAM WHERE t_name = 'Newbee') AND leave_date IS NULL LIMIT 5;
+INSERT INTO RESULT (p_id,t_id,tr_id,placement,dpc_points)
+SELECT p_id,t_id,(SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%ESL One Hamburg%'),3,150
+FROM ROSTER WHERE t_id = (SELECT t_id FROM TEAM WHERE t_name = 'Newbee') AND leave_date IS NULL LIMIT 5;
+INSERT INTO RESULT (p_id,t_id,tr_id,placement,dpc_points)
+SELECT p_id,t_id,(SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Dota PIT%'),3,45
+FROM ROSTER WHERE t_id = (SELECT t_id FROM TEAM WHERE t_name = 'Newbee') AND leave_date IS NULL LIMIT 5;
+
+INSERT INTO RESULT (p_id,t_id,tr_id,placement,dpc_points)
+SELECT p_id,t_id,(SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Perfect World Masters%'),1,150
+FROM ROSTER WHERE t_id = (SELECT t_id FROM TEAM WHERE t_name = 'Vici Gaming') AND leave_date IS NULL LIMIT 5;
+INSERT INTO RESULT (p_id,t_id,tr_id,placement,dpc_points)
+SELECT p_id,t_id,(SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%Dota PIT%'),2,150
+FROM ROSTER WHERE t_id = (SELECT t_id FROM TEAM WHERE t_name = 'Vici Gaming') AND leave_date IS NULL LIMIT 5;
+
+INSERT INTO RESULT (p_id,t_id,tr_id,placement,dpc_points)
+SELECT p_id,t_id,(SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%MDL%'),1,150
+FROM ROSTER WHERE t_id = (SELECT t_id FROM TEAM WHERE t_name = 'OG') AND leave_date IS NULL LIMIT 5;
+
+INSERT INTO RESULT (p_id,t_id,tr_id,placement,dpc_points)
+SELECT p_id,t_id,(SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%MDL%'),3,30
+FROM ROSTER WHERE t_id = (SELECT t_id FROM TEAM WHERE t_name = 'Natus Vincere') AND leave_date IS NULL LIMIT 5;
+INSERT INTO RESULT (p_id,t_id,tr_id,placement,dpc_points)
+SELECT p_id,t_id,(SELECT tr_id FROM TOURNAMENT WHERE tr_name LIKE '%DreamLeague%'),4,75
+FROM ROSTER WHERE t_id = (SELECT t_id FROM TEAM WHERE t_name = 'Natus Vincere') AND leave_date IS NULL LIMIT 5;
 
 -- BRACKETS
 INSERT INTO BRACKET (br_type,br_stage,tr_id,br_name,br_index)

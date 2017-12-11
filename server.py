@@ -36,7 +36,7 @@ class User(UserMixin):
     def __repr__(self):
         return "%s/%s" % (self.name, self.password)
 
-admin_user = User(1,"Mahmut","AOSCOPTUR")
+admin_user = User(1,"admin","alperencoptur")
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -94,7 +94,6 @@ def admin():
 @login_required
 def add_player():
     if request.method == 'POST':
-        account_id = (request.form['account_id'],"p_accountid")
         nick = (request.form['nick'],"p_nick")
         name = (request.form['name'],"p_name")
         surname = (request.form['surname'],"p_surname")
@@ -104,7 +103,7 @@ def add_player():
         image = (request.form['image'],"p_image")
         s = ""
         v = ""
-        for var in (account_id,nick,name,surname,country,birth_date,teamid,mmr,image):
+        for var in (nick,name,surname,country,birth_date,mmr,image):
             if(var[0] != ""):
                 if(s==""):
                     s = var[1]
@@ -579,9 +578,12 @@ def player_profile(nick):
         query2 = """ SELECT t_name,join_date,leave_date,position,is_captain FROM ROSTER JOIN TEAM ON ROSTER.t_id=TEAM.t_id WHERE p_id=%s ORDER BY leave_date IS NULL DESC, join_date DESC"""
         cursor.execute(query2,[player_info[0]])
         history = cursor.fetchall()
-        query3 = """ SELECT SUM(dpc_points),COUNT(*),COUNT(CASE WHEN tr_date<%s THEN 1 END) FROM RESULT LEFT JOIN TOURNAMENT ON RESULT.tr_id=TOURNAMENT.tr_id WHERE p_id=%s """
-        cursor.execute(query3,[today,player_info[0]])
+        query3 = """ SELECT SUM(dpc_points),COUNT(*) FROM RESULT WHERE p_id=%s """
+        cursor.execute(query3,[player_info[0]])
         results = cursor.fetchone()
+        query3b = """ SELECT COUNT(*) FROM PARTICIPANT WHERE t_id=%s """
+        cursor.execute(query3b,[player_info[9]])
+        participate = cursor.fetchone()
         query4 = """SELECT *
                     FROM(
                         SELECT ROW_NUMBER() OVER() as team_rank, data.*
@@ -602,7 +604,7 @@ def player_profile(nick):
                     ) AS ranks
                     WHERE t_id=%s
                     """
-        cursor.execute(query4,[player_info[10]])
+        cursor.execute(query4,[player_info[9]])
         teamrank = cursor.fetchall()
         query5 = """ SELECT tr_name, tr_enddate, placement, dpc_points, prize
                     FROM RESULT LEFT JOIN TOURNAMENT ON RESULT.tr_id=TOURNAMENT.tr_id
@@ -613,18 +615,18 @@ def player_profile(nick):
         resultlist = cursor.fetchall()
         connection.commit()
     info =  []
-    if player_info[3]!=None or player_info[4]!=None:
-        info.append(('Name',player_info[3]+" "+player_info[4]))
+    if player_info[2]!=None or player_info[3]!=None:
+        info.append(('Name',player_info[2]+" "+player_info[3]))
+    if player_info[4]!=None:
+        info.append(('Country',countries[player_info[4]]))
     if player_info[5]!=None:
-        info.append(('Country',countries[player_info[5]]))
+        info.append(('Birth Date',player_info[5]))
+    if player_info[5]!=None:
+        info.append(('Age',today.year - player_info[5].year - ((today.month, today.day) < (player_info[5].month, player_info[5].day))))
+    if player_info[9]!=None:
+        info.append(('Team',player_info[10]))
     if player_info[6]!=None:
-        info.append(('Birth Date',player_info[6]))
-    if player_info[6]!=None:
-        info.append(('Age',today.year - player_info[6].year - ((today.month, today.day) < (player_info[6].month, player_info[6].day))))
-    if player_info[10]!=None:
-        info.append(('Team',player_info[11]))
-    if player_info[7]!=None:
-        info.append(('Solo MMR',player_info[7]))
+        info.append(('Solo MMR',player_info[6]))
 
     if len(teamrank)>0:
         teamrank=teamrank[0][0]
@@ -633,7 +635,7 @@ def player_profile(nick):
 
     stats = [('DPC Points',results[0]),
              ('Played',results[1]),
-             ('Qualified',results[2]),
+             ('Qualified',participate[0]),
              ('Team Rank',teamrank)]
 
     resultTitles = ['Tournament Name','Date','Plc.','DPC','Prize']
@@ -642,7 +644,7 @@ def player_profile(nick):
     historyColArray = ['3','3','2','2','2']
 
     return render_template('header.html', title="Dotabase", route="player") + \
-           render_template('profile.html', link=player_info[8], name=player_info[2], info=info) + \
+           render_template('profile.html', link=player_info[7], name=player_info[1], info=info) + \
            render_template('stats.html', stats=stats) + \
            render_template('listcard.html', mainTitle='Results',items=resultlist,titles=resultTitles,colSizes=resultColArray) + \
            render_template('listcard.html', mainTitle='Team History',items=history,titles=historyTitles,colSizes=historyColArray) + \
@@ -659,7 +661,8 @@ def players_page():
                            GROUP BY p_id
                            ORDER BY dpc DESC) as RESULT
                     RIGHT JOIN PLAYER
-                    ON RESULT.p_id = PLAYER.p_id"""
+                    ON RESULT.p_id = PLAYER.p_id
+                    ORDER BY dpc IS NULL, dpc DESC"""
         cursor.execute(query)
         players = cursor.fetchall()
         connection.commit()
