@@ -101,10 +101,10 @@ def add_player():
         country = (request.form['country'],"p_country")
         birth_date = (request.form['birth_date'],"p_birth")
         mmr = (request.form['mmr'],"p_mmr")
-
+        image = (request.form['image'],"p_image")
         s = ""
         v = ""
-        for var in (account_id,nick,name,surname,country,birth_date,teamid,mmr):
+        for var in (account_id,nick,name,surname,country,birth_date,teamid,mmr,image):
             if(var[0] != ""):
                 if(s==""):
                     s = var[1]
@@ -149,10 +149,10 @@ def add_team():
         team_tag = (request.form['team_tag'],"t_tag")
         region = (request.form['region'],"t_region")
         date_created = (request.form['date_created'],"t_created")
-
+        image = (request.form['image'],"t_image")
         s = ""
         v = ""
-        for var in (team_name,team_tag,region,date_created):
+        for var in (team_name,team_tag,region,date_created,image):
             if(var[0] != ""):
                 if(s==""):
                     s = var[1]
@@ -558,7 +558,7 @@ def home_page():
         teams = cursor.fetchall()
         cursor.execute(tr_query,[date.today()])
         tournaments = cursor.fetchall()
-        
+
     return render_template('header.html', title="Dotabase", route="home") + \
            render_template('home.html') + \
            render_template('dividepage.html', sizes = (5,7), content=(
@@ -581,7 +581,7 @@ def player_profile(nick):
         history = cursor.fetchall()
         query3 = """ SELECT SUM(dpc_points),COUNT(*),COUNT(CASE WHEN tr_date<%s THEN 1 END) FROM RESULT LEFT JOIN TOURNAMENT ON RESULT.tr_id=TOURNAMENT.tr_id WHERE p_id=%s """
         cursor.execute(query3,[today,player_info[0]])
-        results = cursor.fetchall()[0]
+        results = cursor.fetchone()
         query4 = """SELECT *
                     FROM(
                         SELECT ROW_NUMBER() OVER() as team_rank, data.*
@@ -602,7 +602,7 @@ def player_profile(nick):
                     ) AS ranks
                     WHERE t_id=%s
                     """
-        cursor.execute(query4,[player_info[9]])
+        cursor.execute(query4,[player_info[10]])
         teamrank = cursor.fetchall()
         query5 = """ SELECT tr_name, tr_enddate, placement, dpc_points, prize
                     FROM RESULT LEFT JOIN TOURNAMENT ON RESULT.tr_id=TOURNAMENT.tr_id
@@ -622,9 +622,10 @@ def player_profile(nick):
     if player_info[6]!=None:
         info.append(('Age',today.year - player_info[6].year - ((today.month, today.day) < (player_info[6].month, player_info[6].day))))
     if player_info[10]!=None:
-        info.append(('Team',player_info[10]))
+        info.append(('Team',player_info[11]))
     if player_info[7]!=None:
         info.append(('Solo MMR',player_info[7]))
+
     if len(teamrank)>0:
         teamrank=teamrank[0][0]
     else:
@@ -641,7 +642,7 @@ def player_profile(nick):
     historyColArray = ['3','3','2','2','2']
 
     return render_template('header.html', title="Dotabase", route="player") + \
-           render_template('profile.html', name=player_info[2], info=info, ) + \
+           render_template('profile.html', link=player_info[8], name=player_info[2], info=info) + \
            render_template('stats.html', stats=stats) + \
            render_template('listcard.html', mainTitle='Results',items=resultlist,titles=resultTitles,colSizes=resultColArray) + \
            render_template('listcard.html', mainTitle='Team History',items=history,titles=historyTitles,colSizes=historyColArray) + \
@@ -695,7 +696,7 @@ def team_profile(tname):
         resultTitles = ['Tournament Name','Date','Plc.','DPC Pts.','Prize']
         resultColArray = ['5','2','1','2','2']
         return render_template('header.html', title="Dotabase", route="team") + \
-               render_template('profile.html', name=team_info[1], info=info, ) + \
+               render_template('profile.html', link=team_info[5],name=team_info[1], info=info) + \
                render_template('listcard.html', mainTitle='Roster', items=rosterList, titles=rosterTitles, colSizes=rosterColArray) + \
                render_template('listcard.html', mainTitle='Result', items=resultList, titles=resultTitles, colSizes=resultColArray) + \
                render_template('footer.html', closetag=("div","div"))

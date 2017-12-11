@@ -15,7 +15,8 @@ CREATE TABLE TEAM(
     t_name VARCHAR(60),
     t_tag VARCHAR(10),
     t_region SMALLINT,
-    t_created DATE
+    t_created DATE,
+    t_image VARCHAR(256)
   );
 CREATE TABLE PLAYER (
       p_id SERIAL PRIMARY KEY,
@@ -25,7 +26,8 @@ CREATE TABLE PLAYER (
       p_surname VARCHAR(60),
       p_country VARCHAR(2),
       p_birth DATE,
-      p_mmr INTEGER
+      p_mmr INTEGER,
+      p_image VARCHAR(256)
   );
 CREATE TABLE TOURNAMENT (
       tr_id SERIAL PRIMARY KEY,
