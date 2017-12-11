@@ -526,7 +526,111 @@ def add_roster():
                render_template('footer.html')
                )
 
+@app.route('/remove_team/<id>')
+@login_required
+def remove_team(id):
+    query = "DELETE FROM TEAM WHERE t_id='{}'".format(id)
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor = connection.cursor()
+        try:
+            cursor.execute(query)
+        except dbapi2.Error as e:
+            text = e.pgerror
+            pass
+        else:
+            text = "Team is successfully removed."
+            pass
+    return Response(
+        render_template('error.html',title="Remove Team" ,error=text)
+        )
 
+@app.route('/remove_player/<id>')
+@login_required
+def remove_player(id):
+    query = "DELETE FROM PLAYER WHERE p_id='{}'".format(id)
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor = connection.cursor()
+        try:
+            cursor.execute(query)
+        except dbapi2.Error as e:
+            text = e.pgerror
+            pass
+        else:
+            text = "Player is successfully removed."
+            pass
+    return Response(
+        render_template('error.html',title="Remove Player" ,error=text)
+        )
+
+@app.route('/remove_tournament/<id>')
+@login_required
+def remove_tournament(id):
+    query = "DELETE FROM TOURNAMENT WHERE tr_id='{}'".format(id)
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor = connection.cursor()
+        try:
+            cursor.execute(query)
+        except dbapi2.Error as e:
+            text = e.pgerror
+            pass
+        else:
+            text = "Tournament is successfully removed."
+            pass
+    return Response(
+        render_template('error.html',title="Remove Tournament" ,error=text)
+        )
+
+@app.route('/remove_bracket/<id>')
+@login_required
+def remove_bracket(id):
+    query = "DELETE FROM BRACKET WHERE br_id='{}'".format(id)
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor = connection.cursor()
+        try:
+            cursor.execute(query)
+        except dbapi2.Error as e:
+            text = e.pgerror
+            pass
+        else:
+            text = "Bracket is successfully removed."
+            pass
+    return Response(
+        render_template('error.html',title="Remove Bracket" ,error=text)
+        )
+@app.route('/remove_match/<id>')
+@login_required
+def remove_match(id):
+    query = "DELETE FROM MATCH WHERE m_id='{}'".format(id)
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor = connection.cursor()
+        try:
+            cursor.execute(query)
+        except dbapi2.Error as e:
+            text = e.pgerror
+            pass
+        else:
+            text = "Match is successfully removed."
+            pass
+    return Response(
+        render_template('error.html',title="Match Team" ,error=text)
+        )
+@app.route('/remove_role/<id>')
+@login_required
+def remove_role(id):
+    query = "DELETE FROM ROLE WHERE rl_id='{}'".format(id)
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor = connection.cursor()
+        try:
+            cursor.execute(query)
+        except dbapi2.Error as e:
+            text = e.pgerror
+            pass
+        else:
+            text = "Role is successfully removed."
+            pass
+    return Response(
+        render_template('error.html',title="Remove Role" ,error=text)
+        )
 
 @app.route('/home')
 @app.route('/')
