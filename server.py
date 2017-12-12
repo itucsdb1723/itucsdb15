@@ -36,7 +36,7 @@ class User(UserMixin):
     def __repr__(self):
         return "%s/%s" % (self.name, self.password)
 
-admin_user = User(1,"admin","alperencoptur")
+admin_user = User(1,"admin","correcthorsebatterystaple")
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
