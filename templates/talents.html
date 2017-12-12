@@ -7,7 +7,7 @@
       {% for itemz in itemx%}
         {% if itemz|length > 0 %}
             <div class="card mb-3 p-3">
-              <div class="h3 mb-2 text-wlight">{{ itemz[0][0] }}</div>
+              <div class="h3 mb-2 text-wlight">{{ itemz[0][0] }} - {{ itemz[0][4] }}</div>
               {% for item in itemz %}
                 <p class="m-0">{{item[2]}} <b>"<a class="text-dark" href="../player/{{item[1]}}">{{item[1]}}</a>"</b> {{item[3]}} {% if current_user.is_authenticated %}<a class="text-danger" href="/remove_talent/{{item[6]}}/{{id}}">Remove</a>{% endif %} </p>
               {% endfor %}

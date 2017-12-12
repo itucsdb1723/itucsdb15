@@ -45,7 +45,7 @@ def login():
         password = request.form['password']
         if admin_user.name == username and admin_user.password == password:
             login_user(admin_user)
-            return redirect(request.args.get("next"))
+            return redirect(url_for('home_page'))
         else:
             return abort(401)
     else:
@@ -80,15 +80,6 @@ def get_elephantsql_dsn(vcap_services):
     dsn = """user='{}' password='{}' host='{}' port={}
              dbname='{}'""".format(user, password, host, port, dbname)
     return dsn
-
-@app.route('/admin')
-@login_required
-def admin():
-    return Response(
-           render_template('header.html', title="Admin Login") + \
-           render_template('alert.html', color="success",text="Welcome to the admin page!") + \
-           render_template('footer.html')
-           )
 
 @app.route("/add_player",methods=["GET", "POST"])
 @login_required
