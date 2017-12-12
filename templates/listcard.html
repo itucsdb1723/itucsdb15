@@ -8,9 +8,10 @@
     </div>
     {% for itemArray in items %}
     <div class="row">
-      {% for item in itemArray %}
+      {% for item in itemArray[:colSizes|length] %}
       <div class="col-md-{{colSizes[loop.index0]}} text-center">{{item}}</div>
       {% endfor %}
+      {% if route is defined and current_user.is_authenticated %}<a class="text-danger text-center w-100" href="/remove_{{route}}/{%if route!='match'%}{{itemArray[-2]}}/{% endif %}{{itemArray[-1]}}">Remove</a>{% endif %}
     </div>
     {% endfor %}
   </div>

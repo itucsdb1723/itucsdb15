@@ -526,7 +526,330 @@ def add_roster():
                render_template('footer.html')
                )
 
+@app.route('/remove_team/<id>')
+@login_required
+def remove_team(id):
+    query = "DELETE FROM TEAM WHERE t_id='{}'".format(id)
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor = connection.cursor()
+        try:
+            cursor.execute(query)
+        except dbapi2.Error as e:
+            text = e.pgerror
+            pass
+        else:
+            text = "Team is successfully removed."
+            pass
+    return Response(
+        render_template('error.html',title="Remove Team" ,error=text)
+        )
 
+@app.route('/remove_player/<id>')
+@login_required
+def remove_player(id):
+    query = "DELETE FROM PLAYER WHERE p_id='{}'".format(id)
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor = connection.cursor()
+        try:
+            cursor.execute(query)
+        except dbapi2.Error as e:
+            text = e.pgerror
+            pass
+        else:
+            text = "Player is successfully removed."
+            pass
+    return Response(
+        render_template('error.html',title="Remove Player" ,error=text)
+        )
+
+@app.route('/remove_tournament/<id>')
+@login_required
+def remove_tournament(id):
+    query = "DELETE FROM TOURNAMENT WHERE tr_id='{}'".format(id)
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor = connection.cursor()
+        try:
+            cursor.execute(query)
+        except dbapi2.Error as e:
+            text = e.pgerror
+            pass
+        else:
+            text = "Tournament is successfully removed."
+            pass
+    return Response(
+        render_template('error.html',title="Remove Tournament" ,error=text)
+        )
+
+@app.route('/remove_bracket/<id>')
+@login_required
+def remove_bracket(id):
+    query = "DELETE FROM BRACKET WHERE br_id='{}'".format(id)
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor = connection.cursor()
+        try:
+            cursor.execute(query)
+        except dbapi2.Error as e:
+            text = e.pgerror
+            pass
+        else:
+            text = "Bracket is successfully removed."
+            pass
+    return Response(
+        render_template('error.html',title="Remove Bracket" ,error=text)
+        )
+
+@app.route('/remove_match/<id>')
+@login_required
+def remove_match(id):
+    query = "DELETE FROM MATCH WHERE m_id='{}'".format(id)
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor = connection.cursor()
+        try:
+            cursor.execute(query)
+        except dbapi2.Error as e:
+            text = e.pgerror
+            pass
+        else:
+            text = "Match is successfully removed."
+            pass
+    return Response(
+        render_template('error.html',title="Match Team" ,error=text)
+        )
+
+@app.route('/remove_participant/<id_1>/<id_2>')
+@login_required
+def remove_participant(id_1,id_2):
+    query = "DELETE FROM PARTICIPANT WHERE tr_id='{}' AND t_id='{}'".format(id_1,id_2)
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor = connection.cursor()
+        try:
+            cursor.execute(query)
+        except dbapi2.Error as e:
+            text = e.pgerror
+            pass
+        else:
+            text = "Participant is successfully removed."
+            pass
+    return Response(
+        render_template('error.html',title="Remove Participant" ,error=text)
+        )
+
+@app.route('/remove_talent/<id_1>/<id_2>')
+@login_required
+def remove_talent(id_1,id_2):
+    query = "DELETE FROM TALENT WHERE p_id='{}' AND tr_id='{}'".format(id_1,id_2)
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor = connection.cursor()
+        try:
+            cursor.execute(query)
+        except dbapi2.Error as e:
+            text = e.pgerror
+            pass
+        else:
+            text = "Talent is successfully removed."
+            pass
+    return Response(
+        render_template('error.html',title="Remove Talent" ,error=text)
+        )
+
+@app.route('/remove_result/<id_1>/<id_2>')
+@login_required
+def remove_result(id_1,id_2):
+    query = "DELETE FROM RESULT WHERE t_id='{}' AND tr_id='{}'".format(id_1,id_2)
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor = connection.cursor()
+        try:
+            cursor.execute(query)
+        except dbapi2.Error as e:
+            text = e.pgerror
+            pass
+        else:
+            text = "Talent is successfully removed."
+            pass
+    return Response(
+        render_template('error.html',title="Remove Talent" ,error=text)
+        )
+
+@app.route('/remove_roster/<id_1>/<id_2>')
+@login_required
+def remove_roster(id_1,id_2):
+    query = "DELETE FROM ROSTER WHERE p_id='{}' AND t_id='{}'".format(id_1,id_2)
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor = connection.cursor()
+        try:
+            cursor.execute(query)
+        except dbapi2.Error as e:
+            text = e.pgerror
+            pass
+        else:
+            text = "Roster is successfully removed."
+            pass
+    return Response(
+        render_template('error.html',title="Remove Roster" ,error=text)
+        )
+
+@app.route("/update_team/<id>",methods=["GET", "POST"])
+@login_required
+def update_team(id):
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor = connection.cursor()
+        if request.method == 'POST':
+            team_name = (request.form['team_name'])
+            team_tag = (request.form['team_tag'])
+            region = (request.form['region'])
+            date_created = (request.form['date_created'])
+            image = (request.form['image'])
+
+            query = """UPDATE TEAM SET t_name = %s, t_tag = %s, t_region =%s, t_created = %s, t_image = %s
+            WHERE t_id = %s"""
+            try:
+                cursor.execute(query,[team_name,team_tag,region,date_created,date_created,image,id])
+            except dbapi2.Error as e:
+                lcolor = "danger"
+                ltext = e.pgerror
+                pass
+            else:
+                lcolor = "success"
+                ltext = "{} is added to the dotabase".format(team_name)
+                pass
+            return Response(
+                   render_template('header.html', title="Update Team") + \
+                   render_template('alert.html', color=lcolor,text=ltext) + \
+                   render_template('teamform.html', regions=teamRegionList) + \
+                   render_template('footer.html')
+                   )
+        else:
+            query = "SELECT * FROM TEAM WHERE t_id = %s"
+            cursor.execute(query,[id])
+            data = cursor.fetchone()
+            return Response(
+                   render_template('header.html', title="Update Team") + \
+                   render_template('teamform.html', values=data, regions=teamRegionList) + \
+                   render_template('footer.html')
+                   )
+
+@app.route("/update_player/<id>",methods=["GET", "POST"])
+@login_required
+def update_player(id):
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor = connection.cursor()
+        if request.method == 'POST':
+            nick = (request.form['nick'])
+            name = (request.form['name'])
+            surname = (request.form['surname'])
+            country = (request.form['country'])
+            birth_date = (request.form['birth_date'])
+            mmr = (request.form['mmr'])
+            image = (request.form['image'])
+
+            query = """UPDATE PLAYER SET p_nick = %s, p_name = %s, p_surname =%s, p_country = %s, p_birth = %s, p_mmr = %s, p_image =%s
+            WHERE p_id = %s"""
+            try:
+                cursor.execute(query,[nick,name,surname,country,birth_date,mmr,image,id])
+            except dbapi2.Error as e:
+                lcolor = "danger"
+                ltext = e.pgerror
+                pass
+            else:
+                lcolor = "success"
+                ltext = "{} added to the dotabase".format(nick[0])
+                pass
+            return Response(
+                   render_template('header.html', title="Update Player") + \
+                   render_template('alert.html', color=lcolor,text=ltext) + \
+                   render_template('playerform.html', countries=countries) + \
+                   render_template('footer.html')
+                   )
+        else:
+            query = "SELECT * FROM PLAYER WHERE p_id = %s"
+            cursor.execute(query,[id])
+            data = cursor.fetchone()
+            return Response(
+                   render_template('header.html', title="Update Player") + \
+                   render_template('playerform.html', values=data, countries=countries) + \
+                   render_template('footer.html')
+                   )
+
+@app.route("/update_tournament/<id>",methods=["GET", "POST"])
+@login_required
+def update_tournament(id):
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor = connection.cursor()
+        if request.method == 'POST':
+            tournament_name = (request.form['tournament_name'])
+            date_started = (request.form['date_started'])
+            date_ended = (request.form['date_ended'])
+            parent_id = (request.form['parent_id'])
+
+            query = """UPDATE TOURNAMENT SET tr_name = %s, tr_date = %s, tr_enddate =%s, parent_tr_id = %s
+            WHERE tr_id = %s"""
+            try:
+                cursor.execute(query,[tournament_name,date_started,date_ended,parent_id,id])
+            except dbapi2.Error as e:
+                lcolor = "danger"
+                ltext = e.pgerror
+                pass
+            else:
+                lcolor = "success"
+                ltext = "{} is added to the dotabase".format(tournament_name)
+                pass
+            return Response(
+                   render_template('header.html', title="Update Tournament") + \
+                   render_template('alert.html', color=lcolor,text=ltext) + \
+                   render_template('tournamentform.html') + \
+                   render_template('footer.html')
+                   )
+        else:
+            query = "SELECT * FROM TOURNAMENT WHERE tr_id = %s"
+            cursor.execute(query,[id])
+            data = cursor.fetchone()
+            return Response(
+                   render_template('header.html', title="Update Tournament") + \
+                   render_template('tournamentform.html', values=data) + \
+                   render_template('footer.html')
+                   )
+
+
+@app.route("/update_bracket/<id>",methods=["GET", "POST"])
+@login_required
+def update_bracket(id):
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor = connection.cursor()
+        if request.method == 'POST':
+
+            team_count = (request.form['team_count'],"team_count")
+            br_type = (request.form['br_type'],"br_type")
+            br_stage = (request.form['br_stage'],"br_stage")
+            tr_id = (request.form['tr_id'],"tr_id")
+            br_name = (request.form['br_name'],"br_name")
+
+            query = """UPDATE BRACKET SET team_count = %s, br_type = %s, br_stage =%s, tr_id = %s, br_name = %s
+            WHERE br_id = %s"""
+            try:
+                cursor.execute(query,[team_count,br_type,br_stage,tr_id,br_name,])
+            except dbapi2.Error as e:
+                lcolor = "danger"
+                ltext = e.pgerror
+                pass
+            else:
+                lcolor = "success"
+                ltext = "Bracket is added to the dotabase"
+                pass
+            return Response(
+                   render_template('header.html', title="Update Bracket") + \
+                   render_template('alert.html', color=lcolor,text=ltext) + \
+                   render_template('bracketform.html') + \
+                   render_template('footer.html')
+                   )
+        else:
+            query = "SELECT * FROM BRACKET WHERE br_id = %s"
+            cursor.execute(query,[id])
+            data = cursor.fetchone()
+            return Response(
+                   render_template('header.html', title="Update Bracket") + \
+                   render_template('bracketform.html', values=data) + \
+                   render_template('footer.html')
+                   )
 
 @app.route('/home')
 @app.route('/')
@@ -575,7 +898,7 @@ def player_profile(nick):
         query = """SELECT * FROM (SELECT * FROM PLAYER WHERE p_nick=%s) AS PLAYER LEFT JOIN (SELECT ID.p_id,ID.t_id,TEAM.t_name FROM (SELECT p_id,t_id FROM ROSTER WHERE leave_date IS NULL) AS ID LEFT JOIN TEAM ON ID.t_id=TEAM.t_id) AS TEAM ON PLAYER.p_id = TEAM.p_id"""
         cursor.execute(query,[nick])
         player_info = cursor.fetchone()
-        query2 = """ SELECT t_name,join_date,leave_date,position,is_captain FROM ROSTER JOIN TEAM ON ROSTER.t_id=TEAM.t_id WHERE p_id=%s ORDER BY leave_date IS NULL DESC, join_date DESC"""
+        query2 = """ SELECT t_name,join_date,leave_date,position,is_captain,ROSTER.p_id,ROSTER.t_id FROM ROSTER JOIN TEAM ON ROSTER.t_id=TEAM.t_id WHERE p_id=%s ORDER BY leave_date IS NULL DESC, join_date DESC"""
         cursor.execute(query2,[player_info[0]])
         history = cursor.fetchall()
         query3 = """ SELECT SUM(dpc_points),COUNT(*) FROM RESULT WHERE p_id=%s """
@@ -606,7 +929,7 @@ def player_profile(nick):
                     """
         cursor.execute(query4,[player_info[9]])
         teamrank = cursor.fetchall()
-        query5 = """ SELECT tr_name, tr_enddate, placement, dpc_points, prize
+        query5 = """ SELECT tr_name, tr_enddate, placement, dpc_points, prize, RESULT.t_id, RESULT.tr_id
                     FROM RESULT LEFT JOIN TOURNAMENT ON RESULT.tr_id=TOURNAMENT.tr_id
                     WHERE p_id=%s
                     ORDER BY tr_enddate DESC
@@ -644,10 +967,10 @@ def player_profile(nick):
     historyColArray = ['3','3','2','2','2']
 
     return render_template('header.html', title="Dotabase", route="player") + \
-           render_template('profile.html', link=player_info[7], name=player_info[1], info=info) + \
+           render_template('profile.html', route="player", id=player_info[0], link=player_info[7], name=player_info[1], info=info) + \
            render_template('stats.html', stats=stats) + \
-           render_template('listcard.html', mainTitle='Results',items=resultlist,titles=resultTitles,colSizes=resultColArray) + \
-           render_template('listcard.html', mainTitle='Team History',items=history,titles=historyTitles,colSizes=historyColArray) + \
+           render_template('listcard.html', mainTitle='Results', route="result", items=resultlist,titles=resultTitles,colSizes=resultColArray) + \
+           render_template('listcard.html', mainTitle='Team History', route="roster", items=history,titles=historyTitles,colSizes=historyColArray) + \
            render_template('footer.html', closetag=("div","div"))
 
 @app.route('/player')
@@ -677,12 +1000,23 @@ def team_profile(tname):
         query = """ SELECT * FROM TEAM WHERE t_name=%s"""
         cursor.execute(query,[tname])
         team_info = cursor.fetchone()
-        query2 = """SELECT p_nick,join_date,leave_date,position,is_captain FROM ROSTER LEFT JOIN PLAYER ON ROSTER.p_id=PLAYER.p_id WHERE ROSTER.t_id = %s ORDER BY leave_date DESC,position ASC"""
+        query2 = """SELECT p_nick,join_date,leave_date,position,is_captain,PLAYER.p_id,ROSTER.t_id FROM ROSTER LEFT JOIN PLAYER ON ROSTER.p_id=PLAYER.p_id WHERE ROSTER.t_id = %s ORDER BY leave_date DESC,position ASC"""
         cursor.execute(query2,[team_info[0]])
         rosterList = cursor.fetchall()
-        query3 = """SELECT tr_name,tr_enddate,placement,dpc_points,prize FROM (SELECT tr_id,placement,sum(prize) as prize,SUM(dpc_points) as dpc_points FROM RESULT WHERE RESULT.t_id = %s GROUP BY tr_id,placement) AS RESULT LEFT JOIN TOURNAMENT ON RESULT.tr_id=TOURNAMENT.tr_id ORDER BY tr_enddate DESC """
+        query3 = """SELECT tr_name,tr_enddate,placement,dpc_points,prize,RESULT.t_id,RESULT.tr_id FROM (SELECT t_id,tr_id,placement,sum(prize) as prize,SUM(dpc_points) as dpc_points FROM RESULT WHERE RESULT.t_id = %s GROUP BY t_id,tr_id,placement) AS RESULT LEFT JOIN TOURNAMENT ON RESULT.tr_id=TOURNAMENT.tr_id ORDER BY tr_enddate DESC """
         cursor.execute(query3,[team_info[0]])
         resultList = cursor.fetchall()
+        query4 = """SELECT TEAM1.t_name,TEAM2.t_name,MATCH.t_1_score,MATCH.t_2_score,m_id
+                    FROM MATCH
+                    LEFT JOIN TEAM AS TEAM1
+                    ON MATCH.t_id = TEAM1.t_id
+                    LEFT JOIN TEAM AS TEAM2
+                    ON MATCH.t_id_2 = TEAM2.t_id
+                    WHERE MATCH.t_id=%s OR MATCH.t_id_2=%s
+                    ORDER BY m_id DESC
+        """
+        cursor.execute(query4,[team_info[0],team_info[0]])
+        matchList = cursor.fetchall()
         connection.commit()
         info = []
 
@@ -698,10 +1032,13 @@ def team_profile(tname):
         rosterColArray = ['3','3','2','2','2']
         resultTitles = ['Tournament Name','Date','Plc.','DPC Pts.','Prize']
         resultColArray = ['5','2','1','2','2']
+        matchTitles = ['Team 1','Team 2','T1 Score','T2 Score']
+        matchColArray = ['4','4','2','2']
         return render_template('header.html', title="Dotabase", route="team") + \
-               render_template('profile.html', link=team_info[5],name=team_info[1], info=info) + \
-               render_template('listcard.html', mainTitle='Roster', items=rosterList, titles=rosterTitles, colSizes=rosterColArray) + \
-               render_template('listcard.html', mainTitle='Result', items=resultList, titles=resultTitles, colSizes=resultColArray) + \
+               render_template('profile.html', route="team", id=team_info[0], link=team_info[5], name=team_info[1], info=info) + \
+               render_template('listcard.html', mainTitle='Roster', route="roster", items=rosterList, titles=rosterTitles, colSizes=rosterColArray) + \
+               render_template('listcard.html', mainTitle='Result', route="result", items=resultList, titles=resultTitles, colSizes=resultColArray) + \
+               render_template('listcard.html', mainTitle='Matches', route="match", items=matchList, titles=matchTitles, colSizes=matchColArray) + \
                render_template('footer.html', closetag=("div","div"))
 
 @app.route('/team')
@@ -751,33 +1088,33 @@ def tournament_profile(trname):
 
         query2 ="""SELECT *
                     FROM (
-                            SELECT TEAM.t_name,SUM(won_mathces) AS winScoreTotal,SUM(lose_mathces) AS loseScoreTotal,SUM(team_won) AS teamWonTotal ,SUM(team_lose) AS teamLoseTotal,br_stage
+                            SELECT TEAM.t_name,SUM(won_mathces) AS winScoreTotal,SUM(lose_mathces) AS loseScoreTotal,SUM(team_won) AS teamWonTotal ,SUM(team_lose) AS teamLoseTotal, br_stage, teamScores.br_id
                             FROM(
-                                    SELECT  t_id as team_ids ,SUM(CASE WHEN t_1_score > t_2_score THEN 1 ELSE 0 END) as won_mathces,SUM(CASE WHEN t_2_score > t_1_score THEN 1 ELSE 0 END) as lose_mathces,SUM(t_1_score) AS team_won, SUM(t_2_score) AS team_lose,br_stage
+                                    SELECT  t_id as team_ids ,SUM(CASE WHEN t_1_score > t_2_score THEN 1 ELSE 0 END) as won_mathces,SUM(CASE WHEN t_2_score > t_1_score THEN 1 ELSE 0 END) as lose_mathces,SUM(t_1_score) AS team_won, SUM(t_2_score) AS team_lose,br_stage,BRACKET.br_id
                                     FROM MATCH
                                     LEFT JOIN BRACKET
                                     ON MATCH.br_id = BRACKET.br_id
                                     WHERE MATCH.br_id
                                     IN (SELECT  br_id FROM BRACKET WHERE BRACKET.tr_id = %s )
                                     AND BRACKET.br_type = '0'
-                                    GROUP BY team_ids,br_stage
+                                    GROUP BY team_ids,br_stage,BRACKET.br_id
                                     UNION All
-                                    SELECT  t_id_2 as team_ids ,SUM(CASE WHEN t_2_score > t_1_score THEN 1 ELSE 0 END) as won_mathces,SUM(CASE WHEN t_1_score > t_2_score THEN 1 ELSE 0 END) as lose_mathces,SUM(t_2_score) AS team_won, SUM(t_1_score) AS team_lose,br_stage
+                                    SELECT  t_id_2 as team_ids ,SUM(CASE WHEN t_2_score > t_1_score THEN 1 ELSE 0 END) as won_mathces,SUM(CASE WHEN t_1_score > t_2_score THEN 1 ELSE 0 END) as lose_mathces,SUM(t_2_score) AS team_won, SUM(t_1_score) AS team_lose,br_stage,BRACKET.br_id
                                     FROM MATCH
                                     LEFT JOIN BRACKET
                                     ON MATCH.br_id = BRACKET.br_id
                                     WHERE MATCH.br_id
                                     IN (SELECT  br_id FROM BRACKET WHERE BRACKET.tr_id = %s )
                                     AND BRACKET.br_type = '0'
-                                    GROUP BY team_ids,br_stage
-                                ) AS teamScores LEFT JOIN TEAM ON teamScores.team_ids = TEAM.t_id GROUP BY TEAM.t_name,br_stage
+                                    GROUP BY team_ids,br_stage,BRACKET.br_id
+                                ) AS teamScores LEFT JOIN TEAM ON teamScores.team_ids = TEAM.t_id GROUP BY TEAM.t_name, br_stage, teamScores.br_id
                           )as teamScores
                     ORDER BY  br_stage ASC, loseScoreTotal ASC,winScoreTotal DESC
                 """
         cursor.execute(query2,[tournament_info[0],tournament_info[0]])
         groupMatches = cursor.fetchall()
 
-        query3 =""" SELECT matches.t_id,team1name,t_id_2,TEAM.t_name as team2name,t_1_score,t_2_score,br_name,br_stage,br_index,COALESCE(m_index,0),matches.br_id
+        query3 =""" SELECT matches.t_id,team1name,t_id_2,TEAM.t_name as team2name,t_1_score,t_2_score,br_name,matches.br_id,br_stage,br_index,COALESCE(m_index,0)
                     FROM (
                             SELECT  matches.t_id,TEAM.t_name as team1name,t_id_2,br_name,t_1_score,t_2_score,br_stage,br_index,m_index,matches.br_id
                             FROM (
@@ -797,9 +1134,9 @@ def tournament_profile(trname):
         cursor.execute(query3,[tournament_info[0]])
         playoffMatches = cursor.fetchall()
 
-        query4= """ SELECT teamTable.teamName,TOURNAMENT.tr_name
+        query4= """ SELECT teamTable.teamName,TOURNAMENT.tr_name,teamTable.teamID
                     FROM(
-                        SELECT qualifier_id,TEAM.t_name as teamName
+                        SELECT qualifier_id,TEAM.t_name as teamName,TEAM.t_id as teamID
                         FROM PARTICIPANT
                         LEFT JOIN TEAM
                         ON TEAM.t_id = PARTICIPANT.t_id
@@ -811,7 +1148,7 @@ def tournament_profile(trname):
         cursor.execute(query4,[tournament_info[0]])
         participants = cursor.fetchall()
 
-        query5 = """SELECT role,p_nick,p_name,p_surname,lang,priority
+        query5 = """SELECT role,p_nick,p_name,p_surname,lang,priority,talents.p_id
                     FROM (
                             SELECT p_id,lang,role,priority
                             FROM TALENT
@@ -848,14 +1185,14 @@ def tournament_profile(trname):
         maxMatches = 0
         maxIndex = 0
         if len(playoffMatches) > 0:
-            maxMatches = len(sorted({ x[9] for x in playoffMatches }))
-            maxIndex = len(sorted({ x[8] for x in playoffMatches }))
-            stages = sorted({ x[7] for x in playoffMatches }, reverse=True)
+            maxMatches = len(sorted({ x[10] for x in playoffMatches }))
+            maxIndex = len(sorted({ x[9] for x in playoffMatches }))
+            stages = sorted({ x[8] for x in playoffMatches }, reverse=True)
             for y in stages:
                 tempStage = []
-                indexes = sorted({ x[8] for x in playoffMatches if x[7] == y})
+                indexes = sorted({ x[9] for x in playoffMatches if x[8] == y})
                 for z in indexes:
-                    tempStage.append([x[:7] for x in playoffMatches if x[8] == z and x[7] == y])
+                    tempStage.append([x[:8] for x in playoffMatches if x[9] == z and x[8] == y])
                 playoffMatchesInfo.append(tempStage)
 
         info = []
@@ -870,9 +1207,9 @@ def tournament_profile(trname):
             info.append(('Parent Tournament',parentTournamentName[0]))
 
         return render_template('header.html', title="Dotabase", route="tournaments") + \
-               render_template('tournamentprofile.html', name=tournament_info[1], info=info, )  + \
-               render_template('teamlist.html', route="tournaments", items=participants) + \
-               render_template('talents.html', route="tournaments", items=talentsInfo) + \
+               render_template('tournamentprofile.html', route="tournament", id=tournament_info[0], name=tournament_info[1], info=info, )  + \
+               render_template('teamlist.html', id=tournament_info[0], route="tournaments", items=participants) + \
+               render_template('talents.html', id=tournament_info[0], route="tournaments", items=talentsInfo) + \
                render_template('groups.html', route="tournaments", items=groupMatchesInfo) + \
                render_template('playoffs.html', route="tournaments", height=120*maxMatches, indexes=maxIndex, items=playoffMatchesInfo) + \
                render_template('footer.html', closetag=("div"))
