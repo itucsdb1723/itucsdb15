@@ -597,6 +597,7 @@ def remove_bracket(id):
     return Response(
         render_template('error.html',title="Remove Bracket" ,error=text)
         )
+
 @app.route('/remove_match/<id>')
 @login_required
 def remove_match(id):
@@ -614,6 +615,7 @@ def remove_match(id):
     return Response(
         render_template('error.html',title="Match Team" ,error=text)
         )
+
 @app.route('/remove_role/<id>')
 @login_required
 def remove_role(id):
@@ -631,6 +633,285 @@ def remove_role(id):
     return Response(
         render_template('error.html',title="Remove Role" ,error=text)
         )
+
+@app.route('/remove_participant/<id_1>/<id_2>')
+@login_required
+def remove_participant(id_1,id_2):
+    query = "DELETE FROM PARTICIPANT WHERE tr_id='{}' AND t_id='{}'".format(id_1,id_2)
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor = connection.cursor()
+        try:
+            cursor.execute(query)
+        except dbapi2.Error as e:
+            text = e.pgerror
+            pass
+        else:
+            text = "Participant is successfully removed."
+            pass
+    return Response(
+        render_template('error.html',title="Remove Participant" ,error=text)
+        )
+
+@app.route('/remove_talent/<id_1>/<id_2>')
+@login_required
+def remove_talent(id_1,id_2):
+    query = "DELETE FROM TALENT WHERE p_id='{}' AND tr_id='{}'".format(id_1,id_2)
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor = connection.cursor()
+        try:
+            cursor.execute(query)
+        except dbapi2.Error as e:
+            text = e.pgerror
+            pass
+        else:
+            text = "Talent is successfully removed."
+            pass
+    return Response(
+        render_template('error.html',title="Remove Talent" ,error=text)
+        )
+
+@app.route('/remove_result/<id_1>/<id_2>')
+@login_required
+def remove_result(id_1,id_2):
+    query = "DELETE FROM RESULT WHERE t_id='{}' AND tr_id='{}'".format(id_1,id_2)
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor = connection.cursor()
+        try:
+            cursor.execute(query)
+        except dbapi2.Error as e:
+            text = e.pgerror
+            pass
+        else:
+            text = "Talent is successfully removed."
+            pass
+    return Response(
+        render_template('error.html',title="Remove Talent" ,error=text)
+        )
+
+@app.route('/remove_roster/<id_1>/<id_2>')
+@login_required
+def remove_roster(id_1,id_2):
+    query = "DELETE FROM ROSTER WHERE p_id='{}' AND t_id='{}'".format(id_1,id_2)
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor = connection.cursor()
+        try:
+            cursor.execute(query)
+        except dbapi2.Error as e:
+            text = e.pgerror
+            pass
+        else:
+            text = "Roster is successfully removed."
+            pass
+    return Response(
+        render_template('error.html',title="Remove Roster" ,error=text)
+        )
+
+@app.route("/update_team/<id>",methods=["GET", "POST"])
+@login_required
+def update_team(id):
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor = connection.cursor()
+        if request.method == 'POST':
+            team_name = (request.form['team_name'])
+            team_tag = (request.form['team_tag'])
+            region = (request.form['region'])
+            date_created = (request.form['date_created'])
+            image = (request.form['image'])
+
+            query = """UPDATE TEAM SET t_name = %s, t_tag = %s, t_region =%s, t_created = %s, t_image = %s
+            WHERE t_id = %s"""
+            try:
+                cursor.execute(query,[team_name,team_tag,region,date_created,date_created,image,id])
+            except dbapi2.Error as e:
+                lcolor = "danger"
+                ltext = e.pgerror
+                pass
+            else:
+                lcolor = "success"
+                ltext = "{} is added to the dotabase".format(team_name)
+                pass
+            return Response(
+                   render_template('header.html', title="Update Team") + \
+                   render_template('alert.html', color=lcolor,text=ltext) + \
+                   render_template('teamform.html', regions=teamRegionList) + \
+                   render_template('footer.html')
+                   )
+        else:
+            query = "SELECT * FROM TEAM WHERE t_id = %s"
+            cursor.execute(query,[id])
+            data = cursor.fetchone()
+            return Response(
+                   render_template('header.html', title="Update Team") + \
+                   render_template('teamform.html', values=data, regions=teamRegionList) + \
+                   render_template('footer.html')
+                   )
+
+@app.route("/update_player/<id>",methods=["GET", "POST"])
+@login_required
+def update_player(id):
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor = connection.cursor()
+        if request.method == 'POST':
+            nick = (request.form['nick'])
+            name = (request.form['name'])
+            surname = (request.form['surname'])
+            country = (request.form['country'])
+            birth_date = (request.form['birth_date'])
+            mmr = (request.form['mmr'])
+            image = (request.form['image'])
+
+            query = """UPDATE PLAYER SET p_nick = %s, p_name = %s, p_surname =%s, p_country = %s, p_birth = %s, p_mmr = %s, p_image =%s
+            WHERE p_id = %s"""
+            try:
+                cursor.execute(query,[nick,name,surname,country,birth_date,mmr,image,id])
+            except dbapi2.Error as e:
+                lcolor = "danger"
+                ltext = e.pgerror
+                pass
+            else:
+                lcolor = "success"
+                ltext = "{} added to the dotabase".format(nick[0])
+                pass
+            return Response(
+                   render_template('header.html', title="Update Player") + \
+                   render_template('alert.html', color=lcolor,text=ltext) + \
+                   render_template('playerform.html', countries=countries) + \
+                   render_template('footer.html')
+                   )
+        else:
+            query = "SELECT * FROM PLAYER WHERE p_id = %s"
+            cursor.execute(query,[id])
+            data = cursor.fetchone()
+            return Response(
+                   render_template('header.html', title="Update Player") + \
+                   render_template('playerform.html', values=data, countries=countries) + \
+                   render_template('footer.html')
+                   )
+
+@app.route("/update_tournament/<id>",methods=["GET", "POST"])
+@login_required
+def update_tournament(id):
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor = connection.cursor()
+        if request.method == 'POST':
+            tournament_name = (request.form['tournament_name'])
+            date_started = (request.form['date_started'])
+            date_ended = (request.form['date_ended'])
+            parent_id = (request.form['parent_id'])
+
+            query = """UPDATE TOURNAMENT SET tr_name = %s, tr_date = %s, tr_enddate =%s, parent_tr_id = %s
+            WHERE tr_id = %s"""
+            try:
+                cursor.execute(query,[tournament_name,date_started,date_ended,parent_id,id])
+            except dbapi2.Error as e:
+                lcolor = "danger"
+                ltext = e.pgerror
+                pass
+            else:
+                lcolor = "success"
+                ltext = "{} is added to the dotabase".format(tournament_name)
+                pass
+            return Response(
+                   render_template('header.html', title="Update Tournament") + \
+                   render_template('alert.html', color=lcolor,text=ltext) + \
+                   render_template('tournamentform.html') + \
+                   render_template('footer.html')
+                   )
+        else:
+            query = "SELECT * FROM TOURNAMENT WHERE tr_id = %s"
+            cursor.execute(query,[id])
+            data = cursor.fetchone()
+            return Response(
+                   render_template('header.html', title="Update Tournament") + \
+                   render_template('tournamentform.html', values=data) + \
+                   render_template('footer.html')
+                   )
+
+
+@app.route("/update_bracket/<id>",methods=["GET", "POST"])
+@login_required
+def update_bracket(id):
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor = connection.cursor()
+        if request.method == 'POST':
+
+            team_count = (request.form['team_count'],"team_count")
+            br_type = (request.form['br_type'],"br_type")
+            br_stage = (request.form['br_stage'],"br_stage")
+            tr_id = (request.form['tr_id'],"tr_id")
+            br_name = (request.form['br_name'],"br_name")
+
+            query = """UPDATE BRACKET SET team_count = %s, br_type = %s, br_stage =%s, tr_id = %s, br_name = %s
+            WHERE br_id = %s"""
+            try:
+                cursor.execute(query,[team_count,br_type,br_stage,tr_id,br_name,])
+            except dbapi2.Error as e:
+                lcolor = "danger"
+                ltext = e.pgerror
+                pass
+            else:
+                lcolor = "success"
+                ltext = "Bracket is added to the dotabase"
+                pass
+            return Response(
+                   render_template('header.html', title="Update Bracket") + \
+                   render_template('alert.html', color=lcolor,text=ltext) + \
+                   render_template('bracketform.html') + \
+                   render_template('footer.html')
+                   )
+        else:
+            query = "SELECT * FROM BRACKET WHERE br_id = %s"
+            cursor.execute(query,[id])
+            data = cursor.fetchone()
+            return Response(
+                   render_template('header.html', title="Update Bracket") + \
+                   render_template('bracketform.html', values=data) + \
+                   render_template('footer.html')
+                   )
+
+@app.route("/update_match/<id>",methods=["GET", "POST"])
+@login_required
+def update_match(id):
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor = connection.cursor()
+        if request.method == 'POST':
+            t_id = (request.form['t_id'])
+            t_id_2 = (request.form['t_id_2'])
+            br_id = (request.form['br_id'])
+            m_type = (request.form['m_type'])
+            result = (request.form['result'])
+            t_1_score = (request.form['t_1_score'])
+            t_2_score = (request.form['t_2_score'])
+
+            query = """UPDATE MATCH SET t_id = %s, t_id_2 = %s, br_id = %s, m_type =%s, result = %s, t_1_score = %s, t_2_score = %s
+            WHERE m_id = %s"""
+            try:
+                cursor.execute(query,[t_id,t_id_2,br_id,m_type,result,t_1_score,t_2_score])
+            except dbapi2.Error as e:
+                lcolor = "danger"
+                ltext = e.pgerror
+                pass
+            else:
+                lcolor = "success"
+                ltext = "Match is added to the dotabase"
+                pass
+            return Response(
+                   render_template('header.html', title="Update Match") + \
+                   render_template('alert.html', color=lcolor,text=ltext) + \
+                   render_template('matchform.html') + \
+                   render_template('footer.html')
+                   )
+        else:
+            query = "SELECT * FROM MATCH WHERE m_id = %s"
+            cursor.execute(query,[id])
+            data = cursor.fetchone()
+            print(data)
+            return Response(
+                   render_template('header.html', title="Update Match") + \
+                   render_template('matchform.html', values=data) + \
+                   render_template('footer.html')
+                   )
+
 
 @app.route('/home')
 @app.route('/')

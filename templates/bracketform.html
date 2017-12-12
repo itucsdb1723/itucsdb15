@@ -4,31 +4,31 @@
   <div class="form-group row">
     <label for="inputTeamCount" class="col-sm-2 col-form-label-lg">Team Count</label>
     <div class="col-sm-10">
-      <input type="number" class="form-control form-control-lg" name=team_count id="inputTeamCount" placeholder="Team Count">
+      <input type="number" value="{{values[1] if values is defined}}" class="form-control form-control-lg" name=team_count id="inputTeamCount" placeholder="Team Count">
     </div>
   </div>
   <div class="form-group row">
     <label for="inputBracketType" class="col-sm-2 col-form-label-lg">Bracket Type</label>
     <div class="col-sm-10">
-      <input type="checkbox" class="form-control form-control-lg" name=br_type id="inputBracketType" placeholder="Bracket Type">
+      <input type="checkbox" value="{{values[2] if values is defined}}" class="form-control form-control-lg" name=br_type id="inputBracketType" placeholder="Bracket Type">
     </div>
   </div>
   <div class="form-group row">
     <label for="inputBracketStage" class="col-sm-2 col-form-label-lg">Bracket Stage</label>
     <div class="col-sm-10">
-      <input type="number" class="form-control form-control-lg" name=br_stage id="inputQualifierId" placeholder="Breacket Stage">
+      <input type="number" value="{{values[3] if values is defined}}" class="form-control form-control-lg" name=br_stage id="inputQualifierId" placeholder="Breacket Stage">
     </div>
   </div>
   <div class="form-group row">
     <label for="inputTournamentId" class="col-sm-2 col-form-label-lg">Tournament ID</label>
     <div class="col-sm-10">
-      <input type="number" class="form-control form-control-lg" name=tr_id id="inputTournamentId" placeholder="Tournament Id">
+      <input type="number" value="{{values[4] if values is defined}}" class="form-control form-control-lg" name=tr_id id="inputTournamentId" placeholder="Tournament Id">
     </div>
   </div>
   <div class="form-group row">
     <label for="inputBracketName" class="col-sm-2 col-form-label-lg">Bracket Name</label>
     <div class="col-sm-10">
-      <input type="text" class="form-control form-control-lg" name=br_name id="inputBracketName" placeholder="Breacket Name">
+      <input type="text" value="{{values[5] if values is defined}}" class="form-control form-control-lg" name=br_name id="inputBracketName" placeholder="Breacket Name">
     </div>
   </div>
   <div class="form-group row">
