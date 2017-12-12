@@ -77,7 +77,7 @@ $( function() {
 $( function() {
   $("#inputPlayerName").autocomplete({
     source: function(request,response){
-      $.getJSON("../json/tournament/"+request.term, function (data) {
+      $.getJSON("../json/player/"+request.term, function (data) {
         console.log(data);
         response($.map(data, function (value) {
               return {
