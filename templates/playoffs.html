@@ -7,7 +7,11 @@
     {% for itemx in  item%}
     <div class="row">
       <div class="col">
-      <div class="row m-auto {{'bg-dark' if itemx[0][6]|length>0 else 'bg-light'}} text-white" style="height:{{(indexes/item|length)*30}}px;"><div class="w-100 text-center" style="line-height:{{(indexes/item|length)*30}}px;">{{itemx[0][6]}}</div></div>
+      <div class="row m-auto {{'bg-dark' if itemx[0][6]|length>0 else 'bg-light'}} text-white" style="height:{{(indexes/item|length)*30}}px;">
+        <div class="w-100 text-center" style="line-height:{{(indexes/item|length)*30}}px;">
+          {{itemx[0][6]}}{% if current_user.is_authenticated %} - <a class="text-danger" href="/remove_bracket/{{itemx[0][-1]}}">Remove</a>{% endif %}
+        </div>
+      </div>
       {% for itemy in  itemx%}
       <div class="row m-auto" style="height:{{(indexes/item|length)*(height/itemx|length)}}px;align-items:center">
       {% if itemy[6]|length>0 %}

@@ -8,6 +8,14 @@
         <b>{{ key }}:</b> {{ value }}
       </div>
       {% endfor %}
+      {% if current_user.is_authenticated %}
+      <div class="row">
+      <a class="text-danger w-100 text-center" href="/update_{{route}}/{{id}}">Update [{{route}}/{{id}}]</a>
+      </div>
+      <div class="row text-center">
+      <a class="text-danger w-100 text-center" href="/remove_{{route}}/{{id}}">Remove [{{route}}/{{id}}]</a>
+      </div>
+      {% endif %}
     </div>
   </div>
 </div>
