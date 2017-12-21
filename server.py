@@ -231,15 +231,14 @@ def add_tournament():
 @login_required
 def add_bracket():
     if request.method == 'POST':
-        team_count = (request.form['team_count'],"team_count")
-        br_type = (request.form['br_type'],"br_type")
+        br_type = ("true","br_type")
         br_stage = (request.form['br_stage'],"br_stage")
         tr_id = (request.form['tr_id'],"tr_id")
         br_name = (request.form['br_name'],"br_name")
 
         s = ""
         v = ""
-        for var in (team_count,br_type,br_stage,tr_id,br_name):
+        for var in (br_type,br_stage,tr_id,br_name):
             if(var[0] != ""):
                 if(s==""):
                     s = var[1]
@@ -694,7 +693,7 @@ def update_team(id):
             query = """UPDATE TEAM SET t_name = %s, t_tag = %s, t_region =%s, t_created = %s, t_image = %s
             WHERE t_id = %s"""
             try:
-                cursor.execute(query,[team_name,team_tag,region,date_created,date_created,image,id])
+                cursor.execute(query,[team_name,team_tag,region,date_created,image,id])
             except dbapi2.Error as e:
                 lcolor = "danger"
                 ltext = e.pgerror

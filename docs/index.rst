@@ -1,17 +1,16 @@
-Welcome to itucsdb's documentation!
+Welcome to itucsdb1723's documentation!
 ===================================
 
-:Team: Team Name
+:Team: itucsdb1723
 
 :Members:
 
-   * Member 1
-   * Member 2
-   * Member 3
-   * Member 4
-   * Member 5
+   * Alperen Gürses
+   * Halil Özgür
+   * Selim Eren Eryılmaz
 
-**project description goes here (a few paragraphs)**
+
+In this project we aimed to make a tracking website for the new Dota Pro Circuit
 
 Contents:
 
