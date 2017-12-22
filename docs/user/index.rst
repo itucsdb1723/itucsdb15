@@ -127,10 +127,5 @@ In groups section user can see which teams went through which group and their ge
 .. centered::
 	*Screenshot of interactive tournament bracket*
 
-.. toctree::
-
-   member1
-   member2
-   member3
 
    
