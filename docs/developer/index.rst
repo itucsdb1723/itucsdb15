@@ -8,6 +8,13 @@ Database Design
 
 **include the E/R diagram(s)**
 
+.. figure:: images/Scheme.png
+   	:scale: 100 %
+   	:alt: map to buried treasure
+   	:align: center
+
+   	E/R diagram of our database design
+
 Code
 ----
 
