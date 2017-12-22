@@ -32,7 +32,7 @@ Players Page
 
 	*A screenshot from the players page of our project*
 
-In players page user can view the list of the players that played dota professionally in history of DoTA. The list is ordered by the DPC points of the players. Each element directs the user to respective players player page.
+In players page user can view the list of the players that played DOTA professionally in history of DOTA. The list is ordered by the DPC points of the players. Each element directs the user to respective players player page.
 
 Player Page
 ------------
@@ -46,7 +46,7 @@ Player Page
 
 In player pages user can see general information like name, birth date, age and team of the player. Beyond these information users can see the DPC point of the player, the number of times he or she played, the number of times he or she qualified and their team rank.
 
-There are also two lists on each page results and team history. The first list is the results. In results list user can observe which tournaments this player joined, the dates of these tournaments, their placement in the tournament, the dpc points this player got through the tournament and their prize if they got a prize from the tournament. The second list is team history list which consists of the teams this player played in, the join and leave date (if left) of the player and his or her position in the game. 
+There are also two lists on each page results and team history. The first list is the results. In results list user can observe which tournaments this player joined, the dates of these tournaments, their placement in the tournament, the dpc points this player got through the tournament and their prize if they got a prize from the tournament. The second list is team history list which consists of the teams this player played in, the join and leave date (if left) of the player and his or her position in the game.
 
 
 Teams Page
@@ -59,7 +59,7 @@ Teams Page
 
 	*A screenshot from the teams page of our project*
 
-In teams page user can view the list of the teams that existed in e-sports scene of DoTA. The list is ordered by the teams with highest DPC points which is calculated by adding up the DPC points of 3 players with highest DPC points in the respective team. Each element directs the user to respective teams team page.
+In teams page user can view the list of the teams that existed in esports scene of DOTA. The list is ordered by the teams with highest DPC points which is calculated by adding up the DPC points of 3 players with highest DPC points in the respective team. Each element directs the user to respective teams team page.
 
 Team Page
 ---------
@@ -113,7 +113,7 @@ section user can see which teams participated in the tournament and the way they
 
 In groups section user can see which teams went through which group and their general score with their win-lose record. Lastly in playoffs section user can see the visualization finals bracket with a feature which helps user track how teams went through the tournament bracket.
 
-.. |logo1| image:: images/JS.png    
+.. |logo1| image:: images/JS.png
    :scale: 50%
 .. |logo2| image:: images/JS2.png
    :scale: 50%
@@ -122,10 +122,7 @@ In groups section user can see which teams went through which group and their ge
 | |logo1| | |logo2| |
 +---------+---------+
 
-	
+
 
 .. centered::
 	*Screenshot of interactive tournament bracket*
-
-
-   
